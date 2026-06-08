@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>O'Connors — Makesafe Report</title>
+<style>
+  :root {
+    --orange: #E8600A;
+    --orange-light: #FDF0E8;
+    --dark: #1A1A1A;
+    --mid: #555;
+    --muted: #888;
+    --border: #E0DDD8;
+    --bg: #F7F5F2;
+    --white: #FFFFFF;
+    --green: #1A7A3C;
+    --green-light: #EAF5EF;
+    --red: #C0392B;
+    --red-light: #FDEEEC;
+    --radius: 12px;
+    --font: 'DM Sans', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--dark);
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  header {
+    background: var(--dark);
+    color: white;
+    padding: 18px 20px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  header .logo-mark {
+    width: 36px;
+    height: 36px;
+    background: var(--orange);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -1px;
+    flex-shrink: 0;
+  }
+
+  header .title-block { flex: 1; }
+  header .co-name { font-size: 14px; font-weight: 600; letter-spacing: 0.02em; }
+  header .form-label { font-size: 11px; color: #AAA; margin-top: 1px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+  .progress-bar {
+    height: 3px;
+    background: #333;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--orange);
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .step { display: none; padding: 20px; }
+  .step.active { display: block; }
+
+  .step-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 6px;
+  }
+
+  .step-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--dark);
+    line-height: 1.2;
+    margin-bottom: 20px;
+  }
+
+  .field {
+    margin-bottom: 18px;
+  }
+
+  label.field-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--mid);
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+  }
+
+  label.field-label .req { color: var(--orange); margin-left: 2px; }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="time"],
+  input[type="tel"],
+  select,
+  textarea {
+    width: 100%;
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 13px 14px;
+    font-family: var(--font);
+    font-size: 16px;
+    color: var(--dark);
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--orange);
+  }
+
+  textarea { resize: none; line-height: 1.5; }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+  }
+
+  .pill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pill {
+    padding: 10px 16px;
+    border-radius: 100px;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--mid);
+    cursor: pointer;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .pill.selected {
+    background: var(--orange-light);
+    border-color: var(--orange);
+    color: var(--orange);
+  }
+
+  .pill-yes-no { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .pill-yn {
+    padding: 14px;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    font-family: var(--font);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--mid);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+
+  .pill-yn.selected-yes {
+    background: var(--green-light);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .pill-yn.selected-no {
+    background: var(--red-light);
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  .conditional { display: none; margin-top: 12px; }
+  .conditional.show { display: block; }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
+  }
+
+  .section-head {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    margin-top: 24px;
+  }
+  .section-head:first-child { margin-top: 0; }
+
+  .photo-area {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 24px 16px;
+    text-align: center;
+    background: var(--white);
+    cursor: pointer;
+    position: relative;
+  }
+
+  .photo-area input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+
+  .photo-icon { font-size: 32px; margin-bottom: 8px; }
+  .photo-label { font-size: 14px; font-weight: 600; color: var(--mid); }
+  .photo-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .photo-thumbs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .photo-thumb {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    object-fit: cover;
+    width: 100%;
+    background: var(--border);
+  }
+
+  .nav-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 28px;
+  }
+
+  .nav-buttons.single { grid-template-columns: 1fr; }
+
+  .btn {
+    padding: 16px;
+    border-radius: var(--radius);
+    font-family: var(--font);
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.01em;
+  }
+
+  .btn:active { transform: scale(0.97); }
+
+  .btn-back {
+    background: var(--white);
+    color: var(--mid);
+    border: 1.5px solid var(--border);
+  }
+
+  .btn-next {
+    background: var(--orange);
+    color: white;
+  }
+
+  .btn-submit {
+    background: var(--dark);
+    color: white;
+    grid-column: 1 / -1;
+  }
+
+  .step-dots {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    padding: 16px 0 0;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: all 0.2s;
+  }
+
+  .dot.active { background: var(--orange); width: 20px; border-radius: 3px; }
+  .dot.done { background: var(--muted); }
+
+  .success-screen {
+    display: none;
+    padding: 40px 20px;
+    text-align: center;
+  }
+
+  .success-icon {
+    width: 72px;
+    height: 72px;
+    background: var(--green-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 32px;
+  }
+
+  .success-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+  .success-sub { font-size: 15px; color: var(--muted); line-height: 1.5; }
+
+  .btn-reset {
+    margin-top: 32px;
+    display: inline-block;
+    padding: 14px 28px;
+    background: var(--dark);
+    color: white;
+    border-radius: var(--radius);
+    font-family: var(--font);
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+  }
+
+  .error-msg {
+    font-size: 12px;
+    color: var(--red);
+    margin-top: 6px;
+    display: none;
+  }
+
+  .error-msg.show { display: block; }
+
+  .sending-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,26,26,0.7);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: white;
+    gap: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: var(--font);
+  }
+
+  .sending-overlay.show { display: flex; }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255,255,255,0.2);
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">OC</div>
+  <div class="title-block">
+    <div class="co-name">O'Connors Carpentry &amp; Maintenance</div>
+    <div class="form-label">Makesafe Report</div>
+  </div>
+</header>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="step-dots" id="stepDots"></div>
+
+<!-- STEP 1: Job Details -->
+<div class="step active" id="step1">
+  <div class="step-label">Step 1 of 5</div>
+  <div class="step-title">Job details</div>
+
+  <div class="field">
+    <label class="field-label">Client name <span class="req">*</span></label>
+    <select id="clientName">
+      <option value="">Select client...</option>
+      <option>ARC Projects</option>
+      <option>HomeRepair</option>
+      <option>CRA Building Services</option>
+      <option>JP Flynn Builders</option>
+      <option>Other</option>
+    </select>
+  </div>
+
+  <div class="field conditional" id="clientOtherWrap">
+    <label class="field-label">Client name (other)</label>
+    <input type="text" id="clientOther" placeholder="Type client name">
+  </div>
+
+  <div class="field">
+    <label class="field-label">Claim / job number <span class="req">*</span></label>
+    <input type="text" id="claimNumber" placeholder="e.g. PO136574-MS01-001">
+  </div>
+
+  <div class="field">
+    <label class="field-label">Customer name <span class="req">*</span></label>
+    <input type="text" id="customerName" placeholder="Full name">
+  </div>
+
+  <div class="field">
+    <label class="field-label">Site address <span class="req">*</span></label>
+    <input type="text" id="siteAddress" placeholder="Street, suburb, state, postcode">
+  </div>
+
+  <div class="field">
+    <label class="field-label">Date of attendance <span class="req">*</span></label>
+    <input type="date" id="attendDate">
+  </div>
+
+  <div class="field">
+    <label class="field-label">Time of attendance</label>
+    <input type="time" id="attendTime">
+  </div>
+
+  <div class="field">
+    <label class="field-label">Was the customer on site?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="customerOnSite" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="customerOnSite" data-value="No">No</button>
+    </div>
+  </div>
+
+  <div class="nav-buttons single">
+    <button class="btn btn-next" onclick="goNext(1)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 2: Property Details -->
+<div class="step" id="step2">
+  <div class="step-label">Step 2 of 5</div>
+  <div class="step-title">Property details</div>
+
+  <div class="field">
+    <label class="field-label">Building type <span class="req">*</span></label>
+    <div class="pill-group">
+      <button class="pill" data-group="buildingType" data-value="Brick veneer">Brick veneer</button>
+      <button class="pill" data-group="buildingType" data-value="Double brick">Double brick</button>
+      <button class="pill" data-group="buildingType" data-value="Weatherboard">Weatherboard</button>
+      <button class="pill" data-group="buildingType" data-value="Clad">Clad</button>
+      <button class="pill" data-group="buildingType" data-value="Other">Other</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Number of storeys</label>
+    <div class="pill-group">
+      <button class="pill" data-group="storeys" data-value="Single">Single</button>
+      <button class="pill" data-group="storeys" data-value="Double">Double</button>
+      <button class="pill" data-group="storeys" data-value="Other">Other</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Roof type</label>
+    <div class="pill-group">
+      <button class="pill" data-group="roofType" data-value="Tile">Tile</button>
+      <button class="pill" data-group="roofType" data-value="Colorbond">Colorbond</button>
+      <button class="pill" data-group="roofType" data-value="Zincalume">Zincalume</button>
+      <button class="pill" data-group="roofType" data-value="Flat membrane">Flat membrane</button>
+      <button class="pill" data-group="roofType" data-value="Other">Other</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Is the property structurally sound?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="structSound" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="structSound" data-value="No">No</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Roof condition</label>
+    <div class="pill-group">
+      <button class="pill" data-group="roofCondition" data-value="Good">Good</button>
+      <button class="pill" data-group="roofCondition" data-value="Fair">Fair</button>
+      <button class="pill" data-group="roofCondition" data-value="Poor">Poor</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Roof condition notes</label>
+    <textarea id="roofConditionNotes" rows="2" placeholder="e.g. moss/lichen, cracked tiles, damaged ridge..."></textarea>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Asbestos identified?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="asbestos" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="asbestos" data-value="No">No</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Additional inspection required?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="addlInspection" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="addlInspection" data-value="No">No</button>
+    </div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(2)">&larr; Back</button>
+    <button class="btn btn-next" onclick="goNext(2)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 3: Cause & Damage -->
+<div class="step" id="step3">
+  <div class="step-label">Step 3 of 5</div>
+  <div class="step-title">Cause &amp; damage</div>
+
+  <div class="field">
+    <label class="field-label">What did the customer report? <span class="req">*</span></label>
+    <textarea id="customerReport" rows="3" placeholder="What the customer told you when you arrived..."></textarea>
+  </div>
+
+  <div class="field">
+    <label class="field-label">What did you observe on inspection? <span class="req">*</span></label>
+    <textarea id="observations" rows="4" placeholder="What you saw — roof, ceiling, walls, affected areas..."></textarea>
+  </div>
+
+  <div class="field">
+    <label class="field-label">What caused the damage? <span class="req">*</span></label>
+    <textarea id="causeOfDamage" rows="3" placeholder="e.g. Failed ridge pointing allowed wind-driven rain entry..."></textarea>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Areas/rooms affected</label>
+    <textarea id="areasAffected" rows="2" placeholder="e.g. Lounge room ceiling, master bedroom wall..."></textarea>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(3)">&larr; Back</button>
+    <button class="btn btn-next" onclick="goNext(3)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 4: Works Completed -->
+<div class="step" id="step4">
+  <div class="step-label">Step 4 of 5</div>
+  <div class="step-title">Works completed</div>
+
+  <div class="field">
+    <label class="field-label">What make safe works did you complete? <span class="req">*</span></label>
+    <textarea id="worksCompleted" rows="5" placeholder="List each task you completed on site, one per line..."></textarea>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Further repairs required?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="furtherRepairs" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="furtherRepairs" data-value="No">No</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Maintenance issues identified</label>
+    <textarea id="maintenanceIssues" rows="3" placeholder="Any maintenance the customer should address (optional)..."></textarea>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Additional notes</label>
+    <textarea id="additionalNotes" rows="3" placeholder="Anything else Liam should know before writing the report..."></textarea>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(4)">&larr; Back</button>
+    <button class="btn btn-next" onclick="goNext(4)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 5: Photos -->
+<div class="step" id="step5">
+  <div class="step-label">Step 5 of 5</div>
+  <div class="step-title">Photos</div>
+
+  <p style="font-size:14px; color:var(--muted); margin-bottom:20px; line-height:1.5;">Take photos on site and add them here. Before photos first, then after photos. Add a brief note for each if helpful.</p>
+
+  <div class="field">
+    <label class="field-label">Before photos</label>
+    <div class="photo-area" id="beforePhotoArea">
+      <input type="file" id="beforePhotos" accept="image/*" multiple capture="environment" onchange="showThumbs('beforePhotos','beforeThumbs')">
+      <div class="photo-icon">📷</div>
+      <div class="photo-label">Tap to add before photos</div>
+      <div class="photo-sub">Camera or photo library</div>
+    </div>
+    <div class="photo-thumbs" id="beforeThumbs"></div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Before photo notes</label>
+    <textarea id="beforeNotes" rows="2" placeholder="Optional — describe what the before photos show..."></textarea>
+  </div>
+
+  <div class="field">
+    <label class="field-label">After photos</label>
+    <div class="photo-area">
+      <input type="file" id="afterPhotos" accept="image/*" multiple capture="environment" onchange="showThumbs('afterPhotos','afterThumbs')">
+      <div class="photo-icon">📸</div>
+      <div class="photo-label">Tap to add after photos</div>
+      <div class="photo-sub">Camera or photo library</div>
+    </div>
+    <div class="photo-thumbs" id="afterThumbs"></div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">After photo notes</label>
+    <textarea id="afterNotes" rows="2" placeholder="Optional — describe what the after photos show..."></textarea>
+  </div>
+
+  <div id="submitError" class="error-msg">Something went wrong sending the form. Please try again or screenshot and send to Liam.</div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(5)">&larr; Back</button>
+    <button class="btn btn-submit" onclick="submitForm()">Submit report &rarr;</button>
+  </div>
+</div>
+
+<!-- Success Screen -->
+<div class="success-screen" id="successScreen">
+  <div class="success-icon">✓</div>
+  <div class="success-title">Report sent!</div>
+  <div class="success-sub">Liam has received your makesafe details and will prepare the report.</div>
+  <button class="btn-reset" onclick="resetForm()">Start a new report</button>
+</div>
+
+<!-- Sending Overlay -->
+<div class="sending-overlay" id="sendingOverlay">
+  <div class="spinner"></div>
+  <div>Sending report...</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+  // ── EMAILJS CONFIG ──────────────────────────────────────────────────
+  // After creating your EmailJS account:
+  // 1. Replace YOUR_PUBLIC_KEY with your EmailJS public key
+  // 2. Replace YOUR_SERVICE_ID with your EmailJS service ID
+  // 3. Replace YOUR_TEMPLATE_ID with your EmailJS template ID
+  // Full setup guide in the README below the form
+  const EMAILJS_PUBLIC_KEY  = 'GKPaT752iXLmDaUF0';
+  const EMAILJS_SERVICE_ID  = 'service_osn4h8y';
+  const EMAILJS_TEMPLATE_ID = 'template_840qxa9';
+  // ────────────────────────────────────────────────────────────────────
+
+  emailjs.init(EMAILJS_PUBLIC_KEY);
+
+  const TOTAL_STEPS = 5;
+  let currentStep = 1;
+  const selections = {};
+
+  // Progress
+  function updateProgress() {
+    document.getElementById('progressFill').style.width = ((currentStep / TOTAL_STEPS) * 100) + '%';
+    const dots = document.getElementById('stepDots');
+    dots.innerHTML = '';
+    for (let i = 1; i <= TOTAL_STEPS; i++) {
+      const d = document.createElement('div');
+      d.className = 'dot' + (i === currentStep ? ' active' : i < currentStep ? ' done' : '');
+      dots.appendChild(d);
+    }
+  }
+
+  updateProgress();
+
+  // Pill selection
+  document.querySelectorAll('.pill, .pill-yn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const group = this.dataset.group;
+      const val = this.dataset.value;
+      selections[group] = val;
+
+      if (this.classList.contains('pill-yn')) {
+        document.querySelectorAll(`.pill-yn[data-group="${group}"]`).forEach(b => {
+          b.classList.remove('selected-yes', 'selected-no');
+        });
+        this.classList.add(val === 'Yes' ? 'selected-yes' : 'selected-no');
+      } else {
+        document.querySelectorAll(`.pill[data-group="${group}"]`).forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+      }
+    });
+  });
+
+  // Client "Other" reveal
+  document.getElementById('clientName').addEventListener('change', function() {
+    document.getElementById('clientOtherWrap').classList.toggle('show', this.value === 'Other');
+  });
+
+  // Navigation
+  function showStep(n) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById('step' + n).classList.add('active');
+    currentStep = n;
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goNext(from) {
+    if (!validateStep(from)) return;
+    showStep(from + 1);
+  }
+
+  function goBack(from) {
+    showStep(from - 1);
+  }
+
+  // Validation
+  function validateStep(step) {
+    if (step === 1) {
+      const client = document.getElementById('clientName').value;
+      const claim  = document.getElementById('claimNumber').value.trim();
+      const cust   = document.getElementById('customerName').value.trim();
+      const addr   = document.getElementById('siteAddress').value.trim();
+      const date   = document.getElementById('attendDate').value;
+      if (!client || !claim || !cust || !addr || !date) {
+        alert('Please fill in all required fields (marked with *).');
+        return false;
+      }
+    }
+    if (step === 3) {
+      const r = document.getElementById('customerReport').value.trim();
+      const o = document.getElementById('observations').value.trim();
+      const c = document.getElementById('causeOfDamage').value.trim();
+      if (!r || !o || !c) {
+        alert('Please fill in the required fields for cause and damage.');
+        return false;
+      }
+    }
+    if (step === 4) {
+      if (!document.getElementById('worksCompleted').value.trim()) {
+        alert('Please describe the make safe works completed.');
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Photo thumbnails
+  function showThumbs(inputId, thumbsId) {
+    const files = document.getElementById(inputId).files;
+    const container = document.getElementById(thumbsId);
+    container.innerHTML = '';
+    Array.from(files).forEach(file => {
+      const url = URL.createObjectURL(file);
+      const img = document.createElement('img');
+      img.src = url;
+      img.className = 'photo-thumb';
+      container.appendChild(img);
+    });
+  }
+
+  // Collect all data
+  function collectData() {
+    const clientRaw = document.getElementById('clientName').value;
+    const client = clientRaw === 'Other' ? document.getElementById('clientOther').value.trim() : clientRaw;
+
+    const timeVal = document.getElementById('attendTime').value;
+    const dateVal = document.getElementById('attendDate').value;
+
+    const lines = [
+      '=== MAKESAFE REPORT ===',
+      '',
+      '--- JOB DETAILS ---',
+      'Client: ' + client,
+      'Claim / Job Number: ' + document.getElementById('claimNumber').value.trim(),
+      'Customer Name: ' + document.getElementById('customerName').value.trim(),
+      'Site Address: ' + document.getElementById('siteAddress').value.trim(),
+      'Date of Attendance: ' + dateVal,
+      'Time of Attendance: ' + (timeVal || 'Not specified'),
+      'Customer on Site: ' + (selections['customerOnSite'] || 'Not answered'),
+      '',
+      '--- PROPERTY DETAILS ---',
+      'Building Type: ' + (selections['buildingType'] || 'Not selected'),
+      'Storeys: ' + (selections['storeys'] || 'Not selected'),
+      'Roof Type: ' + (selections['roofType'] || 'Not selected'),
+      'Structurally Sound: ' + (selections['structSound'] || 'Not answered'),
+      'Roof Condition: ' + (selections['roofCondition'] || 'Not selected'),
+      'Roof Condition Notes: ' + (document.getElementById('roofConditionNotes').value.trim() || 'None'),
+      'Asbestos Identified: ' + (selections['asbestos'] || 'Not answered'),
+      'Additional Inspection Required: ' + (selections['addlInspection'] || 'Not answered'),
+      '',
+      '--- CAUSE & DAMAGE ---',
+      'Customer Report: ' + document.getElementById('customerReport').value.trim(),
+      'Assessor Observations: ' + document.getElementById('observations').value.trim(),
+      'Cause of Damage: ' + document.getElementById('causeOfDamage').value.trim(),
+      'Areas Affected: ' + (document.getElementById('areasAffected').value.trim() || 'Not specified'),
+      '',
+      '--- WORKS COMPLETED ---',
+      document.getElementById('worksCompleted').value.trim(),
+      '',
+      'Further Repairs Required: ' + (selections['furtherRepairs'] || 'Not answered'),
+      'Maintenance Issues: ' + (document.getElementById('maintenanceIssues').value.trim() || 'None noted'),
+      'Additional Notes: ' + (document.getElementById('additionalNotes').value.trim() || 'None'),
+      '',
+      '--- PHOTOS ---',
+      'Before photo count: ' + document.getElementById('beforePhotos').files.length,
+      'Before photo notes: ' + (document.getElementById('beforeNotes').value.trim() || 'None'),
+      'After photo count: ' + document.getElementById('afterPhotos').files.length,
+      'After photo notes: ' + (document.getElementById('afterNotes').value.trim() || 'None'),
+      '',
+      '(Note: Photos must be sent separately via Tradify or direct message to Liam.)',
+    ];
+
+    return lines.join('\n');
+  }
+
+  // Submit
+  async function submitForm() {
+    document.getElementById('submitError').classList.remove('show');
+    document.getElementById('sendingOverlay').classList.add('show');
+
+    const body = collectData();
+    const customer = document.getElementById('customerName').value.trim();
+    const claim = document.getElementById('claimNumber').value.trim();
+
+    const params = {
+      to_email: 'liam@oconnorscarpentry.com',
+      subject: 'Makesafe Report — ' + customer + ' (' + claim + ')',
+      message: body,
+      from_name: 'Field App',
+    };
+
+    try {
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
+      document.getElementById('sendingOverlay').classList.remove('show');
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('successScreen').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      document.getElementById('sendingOverlay').classList.remove('show');
+      document.getElementById('submitError').classList.add('show');
+      console.error('EmailJS error:', err);
+    }
+  }
+
+  // Reset
+  function resetForm() {
+    document.getElementById('successScreen').style.display = 'none';
+    document.querySelectorAll('input[type="text"], input[type="date"], input[type="time"], textarea').forEach(el => el.value = '');
+    document.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+    document.querySelectorAll('.pill.selected').forEach(el => el.classList.remove('selected'));
+    document.querySelectorAll('.pill-yn').forEach(el => el.classList.remove('selected-yes','selected-no'));
+    document.querySelectorAll('.photo-thumbs').forEach(el => el.innerHTML = '');
+    document.getElementById('clientOtherWrap').classList.remove('show');
+    for (const k in selections) delete selections[k];
+    showStep(1);
+  }
+</script>
+
+</body>
+</html>
