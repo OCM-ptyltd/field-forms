@@ -1,0 +1,7 @@
+
+const EMAILJS_PUBLIC_KEY  = 'GKPaT752iXLmDaUF0';
+const EMAILJS_SERVICE_ID  = 'service_osn4h8y';
+const EMAILJS_TEMPLATE_ID = 'template_840qxa9';
+
+
+
