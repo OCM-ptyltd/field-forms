@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>O'Connors — Makesafe Report</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Josefin+Sans:wght@400;600;700&display=swap');
+:root {
+  --teal:#2AABAB; --teal-light:#E8F7F7; --teal-dark:#1A8A8A;
+  --dark:#1A1A1A; --mid:#555; --muted:#888; --border:#E0DDD8;
+  --bg:#F2F9F9; --white:#FFFFFF; --green:#1A7A3C; --green-light:#EAF5EF;
+  --red:#C0392B; --radius:12px; --font:'DM Sans',system-ui,sans-serif;
+  --font-display:'Josefin Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font);background:var(--bg);color:var(--dark);min-height:100vh;padding-bottom:40px}
+header{background:var(--dark);border-bottom:3px solid var(--teal);color:white;padding:18px 20px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+.logo-mark{width:36px;height:36px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;font-family:var(--font-display);flex-shrink:0}
+.co-name{font-size:13px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;font-family:var(--font-display)}
+.form-label{font-size:11px;color:#AAA;margin-top:1px;letter-spacing:0.05em;text-transform:uppercase}
+.progress-bar{height:3px;background:#333}
+.progress-fill{height:100%;background:var(--teal);transition:width 0.4s ease;width:0%}
+.step{display:none;padding:20px}
+.step.active{display:block}
+.step-label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--teal);margin-bottom:6px}
+.step-title{font-size:22px;font-weight:700;color:var(--dark);line-height:1.2;margin-bottom:20px}
+.field{margin-bottom:18px}
+label.field-label{display:block;font-size:13px;font-weight:600;color:var(--mid);margin-bottom:6px;letter-spacing:0.02em}
+label.field-label .req{color:var(--teal);margin-left:2px}
+input[type="text"],input[type="date"],input[type="time"],select,textarea{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:13px 14px;font-family:var(--font);font-size:16px;color:var(--dark);appearance:none;-webkit-appearance:none;outline:none;transition:border-color 0.15s}
+input:focus,select:focus,textarea:focus{border-color:var(--teal)}
+textarea{resize:none;line-height:1.5}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+.pill-group{display:flex;flex-wrap:wrap;gap:8px}
+.pill{padding:10px 16px;border-radius:100px;border:1.5px solid var(--border);background:var(--white);font-family:var(--font);font-size:14px;font-weight:500;color:var(--mid);cursor:pointer;transition:all 0.15s}
+.pill.selected{background:var(--teal-light);border-color:var(--teal);color:var(--teal)}
+.pill-yes-no{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pill-yn{padding:14px;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--white);font-family:var(--font);font-size:15px;font-weight:600;color:var(--mid);cursor:pointer;text-align:center;transition:all 0.15s}
+.pill-yn.sel-yes{background:var(--green-light);border-color:var(--green);color:var(--green)}
+.pill-yn.sel-no{background:#FDEEEC;border-color:var(--red);color:var(--red)}
+.conditional{display:none;margin-top:12px}
+.conditional.show{display:block}
+.nav-buttons{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:28px}
+.nav-buttons.single{grid-template-columns:1fr}
+.btn{padding:16px;border-radius:var(--radius);font-family:var(--font);font-size:16px;font-weight:700;border:none;cursor:pointer;transition:all 0.15s;letter-spacing:0.01em}
+.btn:active{transform:scale(0.97)}
+.btn-back{background:var(--white);color:var(--mid);border:1.5px solid var(--border)}
+.btn-next{background:var(--teal);color:white}
+.btn-submit{background:var(--dark);color:white;grid-column:1/-1}
+.step-dots{display:flex;gap:6px;justify-content:center;padding:16px 0 0}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:all 0.2s}
+.dot.active{background:var(--teal);width:20px;border-radius:3px}
+.dot.done{background:var(--muted)}
+.photo-upload-area{border:2px dashed var(--border);border-radius:var(--radius);padding:24px 16px;text-align:center;background:var(--white);cursor:pointer;transition:border-color 0.2s,background 0.2s}
+.photo-upload-area.has-photos{border-color:var(--teal);background:var(--teal-light)}
+.photo-upload-icon{font-size:32px;margin-bottom:8px}
+.photo-upload-label{font-size:14px;font-weight:600;color:var(--mid)}
+.photo-upload-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.photo-thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.photo-thumb{aspect-ratio:1;border-radius:8px;object-fit:cover;width:100%}
+.check-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer}
+.check-box{width:24px;height:24px;border-radius:6px;border:2px solid var(--border);background:white;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;transition:all 0.15s}
+.check-box.ticked{background:var(--teal);border-color:var(--teal);color:white}
+.success-screen{display:none;padding:40px 20px;text-align:center}
+.success-icon{width:72px;height:72px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:32px}
+.success-title{font-size:24px;font-weight:700;margin-bottom:8px}
+.success-sub{font-size:15px;color:var(--muted);line-height:1.5}
+.btn-reset{margin-top:32px;display:inline-block;padding:14px 28px;background:var(--teal);color:white;border-radius:var(--radius);font-family:var(--font);font-size:15px;font-weight:700;border:none;cursor:pointer}
+.error-msg{font-size:12px;color:var(--red);margin-top:6px;display:none}
+.error-msg.show{display:block}
+.sending-overlay{display:none;position:fixed;inset:0;background:rgba(26,26,26,0.7);z-index:999;align-items:center;justify-content:center;flex-direction:column;color:white;gap:16px;font-size:16px;font-weight:600;font-family:var(--font)}
+.sending-overlay.show{display:flex}
+.spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,0.2);border-top-color:var(--teal);border-radius:50%;animation:spin 0.8s linear infinite}
+.upload-status{background:var(--teal-light);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--teal-dark);margin-top:8px;display:none}
+.upload-status.show{display:block}
+.warn-banner{background:var(--red);border-radius:12px;padding:18px;margin-bottom:16px;animation:flashWarn 1.5s ease-in-out 3}
+.warn-banner-title{font-size:16px;font-weight:700;color:white;margin-bottom:6px}
+.warn-banner-sub{font-size:14px;color:#FFD5D0;font-weight:600;line-height:1.6}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes flashWarn{0%,100%{opacity:1}50%{opacity:0.4}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-mark">M</div>
+  <div>
+    <div class="co-name">O'Connors Carpentry &amp; Maintenance</div>
+    <div class="form-label">Makesafe Report</div>
+  </div>
+</header>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="step-dots" id="stepDots"></div>
+<div id="preBanner"></div>
+
+<!-- STEP 1 -->
+<div class="step active" id="step1">
+  <div class="step-label">Step 1 of 5</div>
+  <div class="step-title">Job details</div>
+  <div class="field">
+    <label class="field-label">Client <span class="req">*</span></label>
+    <select id="clientName">
+      <option value="">Select client...</option>
+      <option>ARC Projects</option>
+      <option>HomeRepair</option>
+      <option>CRA Building Services</option>
+      <option>JP Flynn Builders</option>
+      <option>Other</option>
+    </select>
+  </div>
+  <div class="field conditional" id="clientOtherWrap">
+    <label class="field-label">Client name (other)</label>
+    <input type="text" id="clientOther" placeholder="Type client name">
+  </div>
+  <div class="field">
+    <label class="field-label">Claim / job number <span class="req">*</span></label>
+    <input type="text" id="claimNumber" placeholder="e.g. PO136574-MS01-001">
+  </div>
+  <div class="field">
+    <label class="field-label">Customer name <span class="req">*</span></label>
+    <input type="text" id="customerName" placeholder="Full name">
+  </div>
+  <div class="field">
+    <label class="field-label">Site address <span class="req">*</span></label>
+    <input type="text" id="siteAddress" placeholder="Street, suburb, state, postcode">
+  </div>
+  <div class="field">
+    <label class="field-label">Date of attendance <span class="req">*</span></label>
+    <input type="date" id="attendDate">
+  </div>
+  <div class="field">
+    <label class="field-label">Time of attendance</label>
+    <input type="time" id="attendTime">
+  </div>
+  <div class="field">
+    <label class="field-label">Was the customer on site?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="customerOnSite" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="customerOnSite" data-value="No">No</button>
+    </div>
+  </div>
+  <div class="nav-buttons single">
+    <button class="btn btn-next" onclick="goNext(1)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div class="step" id="step2">
+  <div class="step-label">Step 2 of 5</div>
+  <div class="step-title">Property details</div>
+  <div class="field">
+    <label class="field-label">Building type</label>
+    <div class="pill-group">
+      <button class="pill" data-group="buildingType" data-value="Brick veneer">Brick veneer</button>
+      <button class="pill" data-group="buildingType" data-value="Double brick">Double brick</button>
+      <button class="pill" data-group="buildingType" data-value="Weatherboard">Weatherboard</button>
+      <button class="pill" data-group="buildingType" data-value="Clad">Clad</button>
+      <button class="pill" data-group="buildingType" data-value="Other">Other</button>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Number of storeys</label>
+    <div class="pill-group">
+      <button class="pill" data-group="storeys" data-value="Single">Single</button>
+      <button class="pill" data-group="storeys" data-value="Double">Double</button>
+      <button class="pill" data-group="storeys" data-value="Other">Other</button>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Roof type</label>
+    <div class="pill-group">
+      <button class="pill" data-group="roofType" data-value="Tile">Tile</button>
+      <button class="pill" data-group="roofType" data-value="Colorbond">Colorbond</button>
+      <button class="pill" data-group="roofType" data-value="Zincalume">Zincalume</button>
+      <button class="pill" data-group="roofType" data-value="Flat membrane">Flat membrane</button>
+      <button class="pill" data-group="roofType" data-value="Other">Other</button>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Is the property structurally sound?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="structSound" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="structSound" data-value="No">No</button>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Roof condition</label>
+    <div class="pill-group">
+      <button class="pill" data-group="roofCondition" data-value="Good">Good</button>
+      <button class="pill" data-group="roofCondition" data-value="Fair">Fair</button>
+      <button class="pill" data-group="roofCondition" data-value="Poor">Poor</button>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Roof condition notes</label>
+    <textarea id="roofConditionNotes" rows="2" placeholder="e.g. moss/lichen, cracked tiles, damaged ridge..."></textarea>
+  </div>
+  <div class="field">
+    <label class="field-label">Asbestos identified?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="asbestos" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="asbestos" data-value="No">No</button>
+    </div>
+    <div class="conditional" id="asbestosDescWrap">
+      <label class="field-label" style="margin-top:10px">Please describe</label>
+      <textarea id="asbestosDesc" rows="3" placeholder="Describe location, type and extent of asbestos..."></textarea>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Additional inspection required?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="addlInspection" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="addlInspection" data-value="No">No</button>
+    </div>
+    <div class="conditional" id="addlInspectionDescWrap">
+      <label class="field-label" style="margin-top:10px">Please describe</label>
+      <textarea id="addlInspectionDesc" rows="3" placeholder="What type of inspection is required and why..."></textarea>
+    </div>
+  </div>
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(2)">&larr; Back</button>
+    <button class="btn btn-next" onclick="goNext(2)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="step" id="step3">
+  <div class="step-label">Step 3 of 5</div>
+  <div class="step-title">Cause &amp; damage</div>
+  <div class="field">
+    <label class="field-label">What did the customer report? <span class="req">*</span></label>
+    <textarea id="customerReport" rows="3" placeholder="What the customer told you when you arrived..."></textarea>
+  </div>
+  <div class="field">
+    <label class="field-label">Customer discussion / additional comments</label>
+    <textarea id="customerDiscussion" rows="3" placeholder="Any other discussion with the customer..."></textarea>
+  </div>
+  <div class="field">
+    <label class="field-label">What did you observe on inspection? <span class="req">*</span></label>
+    <textarea id="observations" rows="4" placeholder="What you saw — roof, ceiling, walls, affected areas..."></textarea>
+  </div>
+  <div class="field">
+    <label class="field-label">What caused the damage? <span class="req">*</span></label>
+    <textarea id="causeOfDamage" rows="3" placeholder="e.g. Failed ridge pointing allowed wind-driven rain entry..."></textarea>
+  </div>
+  <div class="field">
+    <label class="field-label">Areas/rooms affected (include sizes where possible)</label>
+    <textarea id="areasAffected" rows="4" placeholder="e.g. Lounge room ceiling — 4.5m x 3.8m&#10;Master bedroom wall — 3.0m x 2.4m"></textarea>
+  </div>
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(3)">&larr; Back</button>
+    <button class="btn btn-next" onclick="goNext(3)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 4 -->
+<div class="step" id="step4">
+  <div class="step-label">Step 4 of 5</div>
+  <div class="step-title">Works completed</div>
+  <div class="field">
+    <label class="field-label">What make safe works did you complete? <span class="req">*</span></label>
+    <textarea id="worksCompleted" rows="5" placeholder="List each task you completed on site, one per line..."></textarea>
+  </div>
+  <div class="field">
+    <label class="field-label">Materials used</label>
+    <textarea id="materialsUsed" rows="3" placeholder="e.g. 1x tube Sikaflex sealant, 2x ridge cap mix..."></textarea>
+  </div>
+  <div class="field">
+    <label class="field-label">Further repairs required?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="furtherRepairs" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="furtherRepairs" data-value="No">No</button>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Maintenance issues identified</label>
+    <textarea id="maintenanceIssues" rows="3" placeholder="Any maintenance the customer should address (optional)..."></textarea>
+  </div>
+  <div class="field">
+    <label class="field-label">Additional notes</label>
+    <textarea id="additionalNotes" rows="3" placeholder="Anything else Liam should know..."></textarea>
+  </div>
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(4)">&larr; Back</button>
+    <button class="btn btn-next" onclick="goNext(4)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 5 -->
+<div class="step" id="step5">
+  <div class="step-label">Step 5 of 5</div>
+  <div class="step-title">Photos</div>
+
+  <div id="warnBanner" style="margin-bottom:20px;"></div>
+
+  <div class="field">
+    <label class="field-label">Before photos <span class="req">*</span></label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="photo-upload-area" onclick="document.getElementById('beforeCameraInput').click()" style="padding:16px">
+        <input type="file" id="beforeCameraInput" accept="image/*" capture="environment" multiple style="display:none" onchange="handlePhotoSelect('before',this.files)">
+        <div class="photo-upload-icon">📷</div>
+        <div class="photo-upload-label" style="font-size:13px">Take photo</div>
+      </div>
+      <div class="photo-upload-area" onclick="document.getElementById('beforeLibraryInput').click()" style="padding:16px">
+        <input type="file" id="beforeLibraryInput" accept="image/*" multiple style="display:none" onchange="handlePhotoSelect('before',this.files)">
+        <div class="photo-upload-icon">🖼️</div>
+        <div class="photo-upload-label" style="font-size:13px">From library</div>
+      </div>
+    </div>
+    <div class="upload-status" id="beforeStatus"></div>
+    <div class="photo-thumbs" id="beforeThumbs"></div>
+  </div>
+  <div class="field">
+    <label class="field-label">Before photo notes</label>
+    <textarea id="beforeNotes" rows="2" placeholder="Briefly describe what the before photos show..."></textarea>
+  </div>
+
+  <div class="field">
+    <label class="field-label">After photos <span class="req">*</span></label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="photo-upload-area" onclick="document.getElementById('afterCameraInput').click()" style="padding:16px">
+        <input type="file" id="afterCameraInput" accept="image/*" capture="environment" multiple style="display:none" onchange="handlePhotoSelect('after',this.files)">
+        <div class="photo-upload-icon">📷</div>
+        <div class="photo-upload-label" style="font-size:13px">Take photo</div>
+      </div>
+      <div class="photo-upload-area" onclick="document.getElementById('afterLibraryInput').click()" style="padding:16px">
+        <input type="file" id="afterLibraryInput" accept="image/*" multiple style="display:none" onchange="handlePhotoSelect('after',this.files)">
+        <div class="photo-upload-icon">🖼️</div>
+        <div class="photo-upload-label" style="font-size:13px">From library</div>
+      </div>
+    </div>
+    <div class="upload-status" id="afterStatus"></div>
+    <div class="photo-thumbs" id="afterThumbs"></div>
+  </div>
+  <div class="field">
+    <label class="field-label">After photo notes</label>
+    <textarea id="afterNotes" rows="2" placeholder="Briefly describe what the after photos show..."></textarea>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Photo checklist — tick each one <span class="req">*</span></label>
+    <div id="photoChecklist" style="background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">Front of house / property overview</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">All damaged areas (before works)</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">Close-up of cause / defect identified</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">All areas after make safe works completed</div>
+      </div>
+      <div class="check-item" style="border-bottom:none" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div id="photoUploadLabel" style="font-size:14px;color:var(--dark)">Photos uploaded to Tradify</div>
+      </div>
+    </div>
+    <div id="checklistError" class="error-msg">Please tick all items before submitting.</div>
+  </div>
+
+  <div id="submitError" class="error-msg">Something went wrong. Please try again or screenshot and send to Liam.</div>
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(5)">&larr; Back</button>
+    <button class="btn btn-submit" onclick="submitForm()">Submit report &rarr;</button>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-screen" id="successScreen">
+  <div class="success-icon">✓</div>
+  <div class="success-title">Report sent!</div>
+  <div class="success-sub">Liam has received your makesafe details and will prepare the report.</div>
+  <div style="margin-top:28px;background:#FFF3F3;border:2px solid var(--red);border-radius:12px;padding:20px;text-align:left;">
+    <div style="font-size:16px;font-weight:700;color:var(--red);margin-bottom:8px;">📸 Before you leave site</div>
+    <div style="font-size:15px;font-weight:700;color:var(--dark);">Upload all photos to Tradify now.</div>
+    <div style="font-size:14px;color:var(--mid);margin-top:6px;line-height:1.6;">Before and after photos. Do this before leaving — not later.</div>
+  </div>
+
+</div>
+
+<!-- OVERLAY -->
+<div class="sending-overlay" id="sendingOverlay">
+  <div class="spinner"></div>
+  <div>Sending report...</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+// ── CONFIG ──────────────────────────────────────────────────
+const EMAILJS_PUBLIC_KEY  = 'GKPaT752iXLmDaUF0';
+const EMAILJS_SERVICE_ID  = 'service_osn4h8y';
+const EMAILJS_TEMPLATE_ID = 'template_840qxa9';
+const CLOUDINARY_CLOUD    = 'dvho4onps';
+const CLOUDINARY_PRESET   = 'ocm_photos';
+const GAS_WEBHOOK         = 'https://script.google.com/macros/s/AKfycbxpHpR9EgfFi-C7ACCPNAjMu6ZGTZCrUHcjWibPk4p8dxmFGJqkgMmPR0qfWYkcnaKunA/exec';
+// ────────────────────────────────────────────────────────────
+
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+const TOTAL_STEPS = 5;
+let currentStep = 1;
+const sel = {};
+const photos = { before: [], after: [] };
+let driveFolderId = '';
+
+// ── DATE FORMATTING ─────────────────────────────────────────
+function formatDate(input) {
+  var v = input.value.replace(/\D/g,'');
+  if (v.length >= 5) {
+    v = v.substring(0,2)+'/'+v.substring(2,4)+'/'+v.substring(4,8);
+  } else if (v.length >= 3) {
+    v = v.substring(0,2)+'/'+v.substring(2);
+  }
+  input.value = v;
+}
+
+// ── PROGRESS ─────────────────────────────────────────────────
+function updateProgress() {
+  document.getElementById('progressFill').style.width = ((currentStep/TOTAL_STEPS)*100)+'%';
+  const dots = document.getElementById('stepDots');
+  dots.innerHTML = '';
+  for (let i = 1; i <= TOTAL_STEPS; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot'+(i===currentStep?' active':i<currentStep?' done':'');
+    dots.appendChild(d);
+  }
+}
+updateProgress();
+
+// ── URL PARAMS — pre-fill from job link ─────────────────────
+(function() {
+  try {
+    const p = new URLSearchParams(window.location.search);
+    const setVal = function(id, val) { if (val) { const el = document.getElementById(id); if (el) el.value = val; } };
+    setVal('customerName', p.get('customer'));
+    setVal('siteAddress',  p.get('address'));
+    setVal('claimNumber',  p.get('claim'));
+
+    // Date — YYYY-MM-DD format required for input[type=date]
+    var dateParam = p.get('date');
+    if (dateParam) setVal('attendDate', dateParam);
+
+    // Client select
+    var clientParam = p.get('client');
+    if (clientParam) {
+      var sl = document.getElementById('clientName');
+      for (var i = 0; i < sl.options.length; i++) {
+        if (sl.options[i].value === clientParam) { sl.value = clientParam; break; }
+      }
+    }
+
+    // Drive folder
+    driveFolderId = p.get('folderid') || '';
+    var photosParam = p.get('photos');
+
+    // Warning banner on step 5
+    var banner = document.getElementById('warnBanner');
+    if (photosParam) {
+      document.getElementById('photoUploadLabel').textContent = 'Photos uploaded';
+      banner.innerHTML = '<div class="warn-banner"><div class="warn-banner-title">UPLOAD ALL PHOTOS BEFORE LEAVING SITE</div><div class="warn-banner-sub">Upload before and after photos to the Drive job folder now.</div></div>';
+    } else {
+      banner.innerHTML = '<div class="warn-banner"><div class="warn-banner-title">UPLOAD ALL PHOTOS TO TRADIFY BEFORE LEAVING SITE</div><div class="warn-banner-sub">BEFORE AND AFTER PHOTOS must be uploaded to Tradify while on site.</div></div>';
+    }
+
+    // Pre-filled banner
+    if (p.get('customer') || p.get('claim')) {
+      var b = document.createElement('div');
+      b.style.cssText = 'background:#E8F7F7;border-bottom:2px solid #2AABAB;padding:10px 20px;font-size:13px;font-weight:600;color:#1A8A8A;text-align:center;';
+      b.textContent = 'Job details pre-filled by Liam';
+      document.querySelector('header').insertAdjacentElement('afterend', b);
+    }
+  } catch(e) {
+    console.log('URL params error:', e);
+  }
+})();
+
+// ── PILL SELECTION ──────────────────────────────────────────
+document.querySelectorAll('.pill, .pill-yn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var group = this.dataset.group;
+    var val   = this.dataset.value;
+    sel[group] = val;
+    if (this.classList.contains('pill-yn')) {
+      document.querySelectorAll('.pill-yn[data-group="'+group+'"]').forEach(function(b) {
+        b.classList.remove('sel-yes','sel-no');
+      });
+      this.classList.add(val==='Yes'?'sel-yes':'sel-no');
+      // Conditionals
+      if (group==='asbestos') {
+        document.getElementById('asbestosDescWrap').classList.toggle('show', val==='Yes');
+      }
+      if (group==='addlInspection') {
+        document.getElementById('addlInspectionDescWrap').classList.toggle('show', val==='Yes');
+      }
+    } else {
+      document.querySelectorAll('.pill[data-group="'+group+'"]').forEach(function(b) { b.classList.remove('selected'); });
+      this.classList.add('selected');
+    }
+  });
+});
+
+// Client other
+document.getElementById('clientName').addEventListener('change', function() {
+  document.getElementById('clientOtherWrap').classList.toggle('show', this.value==='Other');
+});
+
+// ── NAVIGATION ──────────────────────────────────────────────
+function showStep(n) {
+  document.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById('step'+n).classList.add('active');
+  currentStep = n;
+  updateProgress();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function goNext(from) { if (validateStep(from)) showStep(from+1); }
+function goBack(from) { showStep(from-1); }
+
+function validateStep(step) {
+  if (step===1) {
+    if (!document.getElementById('clientName').value ||
+        !document.getElementById('claimNumber').value.trim() ||
+        !document.getElementById('customerName').value.trim() ||
+        !document.getElementById('siteAddress').value.trim() ||
+        !document.getElementById('attendDate').value.trim()) {
+      alert('Please fill in all required fields marked with *');
+      return false;
+    }
+  }
+  if (step===3) {
+    if (!document.getElementById('customerReport').value.trim() ||
+        !document.getElementById('observations').value.trim() ||
+        !document.getElementById('causeOfDamage').value.trim()) {
+      alert('Please fill in all required fields marked with *');
+      return false;
+    }
+  }
+  if (step===4) {
+    if (!document.getElementById('worksCompleted').value.trim()) {
+      alert('Please describe the make safe works completed.');
+      return false;
+    }
+  }
+  return true;
+}
+
+// ── PHOTO UPLOAD ────────────────────────────────────────────
+async function uploadToCloudinary(file, tag) {
+  var fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLOUDINARY_PRESET);
+  fd.append('tags', tag);
+  fd.append('folder', 'ocm_photos');
+  var r = await fetch('https://api.cloudinary.com/v1_1/'+CLOUDINARY_CLOUD+'/image/upload', {method:'POST',body:fd});
+  var d = await r.json();
+  if (!d.secure_url) throw new Error('Upload failed');
+  return d.secure_url;
+}
+
+async function handlePhotoSelect(type, files) {
+  if (!files || files.length===0) return;
+  var statusEl = document.getElementById(type+'Status');
+  var thumbsEl = document.getElementById(type+'Thumbs');
+  var areaEl   = document.getElementById(type+'UploadArea');
+  statusEl.classList.add('show');
+  var claim    = document.getElementById('claimNumber').value.trim() || 'job';
+  var customer = document.getElementById('customerName').value.trim().replace(/\s+/g,'-') || 'customer';
+  var tag      = claim+'-'+customer+'-'+type;
+  var uploaded = 0;
+  for (var i = 0; i < files.length; i++) {
+    var file = files[i];
+    statusEl.textContent = 'Uploading '+(uploaded+1)+' of '+files.length+'...';
+    var localUrl = URL.createObjectURL(file);
+    var img = document.createElement('img');
+    img.src = localUrl;
+    img.className = 'photo-thumb';
+    img.style.opacity = '0.4';
+    thumbsEl.appendChild(img);
+    try {
+      var url = await uploadToCloudinary(file, tag);
+      photos[type].push(url);
+      img.style.opacity = '1';
+      uploaded++;
+    } catch(e) {
+      statusEl.textContent = 'Upload failed — check your connection and try again.';
+      img.style.opacity = '0.2';
+      return;
+    }
+  }
+  areaEl.classList.add('has-photos');
+  statusEl.textContent = photos[type].length+' photo'+(photos[type].length>1?'s':'')+' uploaded';
+}
+
+// ── CHECKLIST ───────────────────────────────────────────────
+function toggleCheck(item) {
+  var box = item.querySelector('.check-box');
+  var ticked = box.classList.toggle('ticked');
+  box.textContent = ticked ? '✓' : '';
+}
+
+// ── COLLECT DATA ────────────────────────────────────────────
+function collectData() {
+  var clientRaw = document.getElementById('clientName').value;
+  var client = clientRaw==='Other' ? document.getElementById('clientOther').value.trim() : clientRaw;
+  var lines = [
+    '=== MAKESAFE REPORT ===','',
+    '--- JOB DETAILS ---',
+    'Client: '+client,
+    'Claim / Job Number: '+document.getElementById('claimNumber').value.trim(),
+    'Customer Name: '+document.getElementById('customerName').value.trim(),
+    'Site Address: '+document.getElementById('siteAddress').value.trim(),
+    'Date of Attendance: '+document.getElementById('attendDate').value,
+    'Time of Attendance: '+(document.getElementById('attendTime').value||'Not specified'),
+    'Customer on Site: '+(sel['customerOnSite']||'Not answered'),
+    '',
+    '--- PROPERTY DETAILS ---',
+    'Building Type: '+(sel['buildingType']||'Not selected'),
+    'Storeys: '+(sel['storeys']||'Not selected'),
+    'Roof Type: '+(sel['roofType']||'Not selected'),
+    'Structurally Sound: '+(sel['structSound']||'Not answered'),
+    'Roof Condition: '+(sel['roofCondition']||'Not selected'),
+    'Roof Condition Notes: '+(document.getElementById('roofConditionNotes').value.trim()||'None'),
+    'Asbestos Identified: '+(sel['asbestos']||'Not answered'),
+    'Asbestos Description: '+(document.getElementById('asbestosDesc').value.trim()||'N/A'),
+    'Additional Inspection Required: '+(sel['addlInspection']||'Not answered'),
+    'Additional Inspection Details: '+(document.getElementById('addlInspectionDesc').value.trim()||'N/A'),
+    '',
+    '--- CAUSE & DAMAGE ---',
+    'Customer Report: '+document.getElementById('customerReport').value.trim(),
+    'Customer Discussion: '+(document.getElementById('customerDiscussion').value.trim()||'None'),
+    'Assessor Observations: '+document.getElementById('observations').value.trim(),
+    'Cause of Damage: '+document.getElementById('causeOfDamage').value.trim(),
+    'Areas Affected: '+(document.getElementById('areasAffected').value.trim()||'Not specified'),
+    '',
+    '--- WORKS COMPLETED ---',
+    document.getElementById('worksCompleted').value.trim(),
+    '',
+    'Materials Used: '+(document.getElementById('materialsUsed').value.trim()||'None specified'),
+    'Further Repairs Required: '+(sel['furtherRepairs']||'Not answered'),
+    'Maintenance Issues: '+(document.getElementById('maintenanceIssues').value.trim()||'None noted'),
+    'Additional Notes: '+(document.getElementById('additionalNotes').value.trim()||'None'),
+    '',
+    '--- PHOTOS ---',
+    'Before Notes: '+(document.getElementById('beforeNotes').value.trim()||'None'),
+    'Before Photos ('+photos.before.length+'): '+(photos.before.length ? photos.before.join(' | ') : 'None uploaded'),
+    'After Notes: '+(document.getElementById('afterNotes').value.trim()||'None'),
+    'After Photos ('+photos.after.length+'): '+(photos.after.length ? photos.after.join(' | ') : 'None uploaded'),
+  ];
+  return lines.join('\n');
+}
+
+// ── SUBMIT ──────────────────────────────────────────────────
+async function submitForm() {
+  document.getElementById('submitError').classList.remove('show');
+  document.getElementById('checklistError').classList.remove('show');
+
+  var items = document.querySelectorAll('#photoChecklist .check-item');
+  var allTicked = true;
+  items.forEach(function(item) {
+    if (!item.querySelector('.check-box').classList.contains('ticked')) allTicked = false;
+  });
+  if (!allTicked) {
+    document.getElementById('checklistError').classList.add('show');
+    document.getElementById('photoChecklist').scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+
+  document.getElementById('sendingOverlay').classList.add('show');
+
+  var customer = document.getElementById('customerName').value.trim();
+  var claim    = document.getElementById('claimNumber').value.trim();
+  var client   = document.getElementById('clientName').value;
+
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email:  'liam@oconnorscarpentry.com',
+      subject:   'Makesafe Report — '+customer+' ('+claim+')',
+      message:   collectData(),
+      from_name: 'Field App',
+    });
+
+    // Notify Apps Script to move photos to Drive
+    if (photos.before.length > 0 || photos.after.length > 0) {
+      fetch(GAS_WEBHOOK, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          action:       'movePhotos',
+          folderId:     driveFolderId,
+          customer:     customer,
+          claim:        claim,
+          client:       client,
+          beforePhotos: photos.before,
+          afterPhotos:  photos.after,
+        }),
+        mode: 'no-cors',
+      }).catch(function(e) { console.log('Webhook error (non-critical):', e); });
+    }
+
+    document.getElementById('sendingOverlay').classList.remove('show');
+    document.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById('successScreen').style.display = 'block';
+    window.scrollTo({top:0,behavior:'smooth'});
+
+  } catch(err) {
+    document.getElementById('sendingOverlay').classList.remove('show');
+    document.getElementById('submitError').classList.add('show');
+    console.error('Submit error:', err);
+  }
+}
+
+// ── RESET ───────────────────────────────────────────────────
+function resetForm() {
+  document.getElementById('successScreen').style.display = 'none';
+  document.querySelectorAll('input[type="text"],input[type="date"],input[type="time"],textarea').forEach(function(el) { el.value=''; });
+  document.querySelectorAll('select').forEach(function(el) { el.selectedIndex=0; });
+  document.querySelectorAll('.pill.selected').forEach(function(el) { el.classList.remove('selected'); });
+  document.querySelectorAll('.pill-yn').forEach(function(el) { el.classList.remove('sel-yes','sel-no'); });
+  document.querySelectorAll('.check-box').forEach(function(el) { el.classList.remove('ticked'); el.textContent=''; });
+  document.querySelectorAll('.photo-thumbs').forEach(function(el) { el.innerHTML=''; });
+  document.querySelectorAll('.upload-status').forEach(function(el) { el.classList.remove('show'); el.textContent=''; });
+  document.querySelectorAll('.photo-upload-area').forEach(function(el) { el.classList.remove('has-photos'); });
+  document.getElementById('clientOtherWrap').classList.remove('show');
+  document.getElementById('asbestosDescWrap').classList.remove('show');
+  document.getElementById('addlInspectionDescWrap').classList.remove('show');
+  photos.before = []; photos.after = [];
+  for (var k in sel) delete sel[k];
+  showStep(1);
+}
+</script>
+</body>
+</html>
