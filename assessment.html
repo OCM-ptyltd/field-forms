@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>O'Connors — Assessment Report</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Josefin+Sans:wght@400;600;700&display=swap');
+:root {
+  --teal:#2AABAB; --teal-light:#E8F7F7; --teal-dark:#1A8A8A;
+  --dark:#1A1A1A; --mid:#555; --muted:#888; --border:#E0DDD8;
+  --bg:#F2F9F9; --white:#FFFFFF; --green:#1A7A3C; --green-light:#EAF5EF;
+  --red:#C0392B; --red-light:#FDEEEC; --radius:12px;
+  --font:'DM Sans',system-ui,sans-serif; --font-display:'Josefin Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font);background:var(--bg);color:var(--dark);min-height:100vh;padding-bottom:40px}
+header{background:var(--dark);border-bottom:3px solid var(--teal);color:white;padding:18px 20px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+.logo-mark{width:36px;height:36px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;font-family:var(--font-display);flex-shrink:0}
+.co-name{font-size:13px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;font-family:var(--font-display)}
+.form-sublabel{font-size:11px;color:#AAA;margin-top:1px;letter-spacing:0.05em;text-transform:uppercase}
+.progress-bar{height:3px;background:#333}
+.progress-fill{height:100%;background:var(--teal);transition:width 0.4s ease;width:0%}
+.step{display:none;padding:20px}
+.step.active{display:block}
+.step-label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--teal);margin-bottom:6px}
+.step-title{font-size:22px;font-weight:700;color:var(--dark);line-height:1.2;margin-bottom:20px}
+.field{margin-bottom:18px}
+label.field-label{display:block;font-size:13px;font-weight:600;color:var(--mid);margin-bottom:6px;letter-spacing:0.02em}
+label.field-label .req{color:var(--teal);margin-left:2px}
+input[type="text"],input[type="date"],input[type="time"],select,textarea{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:13px 14px;font-family:var(--font);font-size:16px;color:var(--dark);appearance:none;-webkit-appearance:none;outline:none;transition:border-color 0.15s}
+input:focus,select:focus,textarea:focus{border-color:var(--teal)}
+textarea{resize:none;line-height:1.5}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+.pill-group{display:flex;flex-wrap:wrap;gap:8px}
+.pill{padding:10px 16px;border-radius:100px;border:1.5px solid var(--border);background:var(--white);font-family:var(--font);font-size:14px;font-weight:500;color:var(--mid);cursor:pointer;transition:all 0.15s}
+.pill.selected{background:var(--teal-light);border-color:var(--teal);color:var(--teal)}
+.pill-yes-no{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pill-three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.pill-yn{padding:14px;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--white);font-family:var(--font);font-size:15px;font-weight:600;color:var(--mid);cursor:pointer;text-align:center;transition:all 0.15s}
+.pill-yn.sel-yes{background:var(--green-light);border-color:var(--green);color:var(--green)}
+.pill-yn.sel-no{background:var(--red-light);border-color:var(--red);color:var(--red)}
+.conditional{display:none;margin-top:12px}
+.conditional.show{display:block}
+.roof-only{display:none}
+.roof-only.show{display:block}
+.trade-only{display:block}
+.trade-only.hide{display:none}
+.nav-buttons{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:28px}
+.nav-buttons.single{grid-template-columns:1fr}
+.btn{padding:16px;border-radius:var(--radius);font-family:var(--font);font-size:16px;font-weight:700;border:none;cursor:pointer;transition:all 0.15s}
+.btn:active{transform:scale(0.97)}
+.btn-back{background:var(--white);color:var(--mid);border:1.5px solid var(--border)}
+.btn-next{background:var(--teal);color:white}
+.btn-submit{background:var(--dark);color:white;grid-column:1/-1}
+.step-dots{display:flex;gap:6px;justify-content:center;padding:16px 0 0}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:all 0.2s}
+.dot.active{background:var(--teal);width:20px;border-radius:3px}
+.dot.done{background:var(--muted)}
+.photo-upload-area{border:2px dashed var(--border);border-radius:var(--radius);padding:24px 16px;text-align:center;background:var(--white);cursor:pointer;transition:border-color 0.2s,background 0.2s}
+.photo-upload-area.has-photos{border-color:var(--teal);background:var(--teal-light)}
+.photo-upload-icon{font-size:32px;margin-bottom:8px}
+.photo-upload-label{font-size:14px;font-weight:600;color:var(--mid)}
+.photo-upload-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.photo-thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.photo-thumb{aspect-ratio:1;border-radius:8px;object-fit:cover;width:100%}
+.check-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer}
+.check-box{width:24px;height:24px;border-radius:6px;border:2px solid var(--border);background:white;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;transition:all 0.15s}
+.check-box.ticked{background:var(--teal);border-color:var(--teal);color:white}
+.upload-status{background:var(--teal-light);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--teal-dark);margin-top:8px;display:none}
+.upload-status.show{display:block}
+.section-divider{height:1px;background:var(--border);margin:24px 0}
+.section-head{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.success-screen{display:none;padding:40px 20px;text-align:center}
+.success-icon{width:72px;height:72px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:32px}
+.success-title{font-size:24px;font-weight:700;margin-bottom:8px}
+.success-sub{font-size:15px;color:var(--muted);line-height:1.5}
+.error-msg{font-size:12px;color:var(--red);margin-top:6px;display:none}
+.error-msg.show{display:block}
+.sending-overlay{display:none;position:fixed;inset:0;background:rgba(26,26,26,0.7);z-index:999;align-items:center;justify-content:center;flex-direction:column;color:white;gap:16px;font-size:16px;font-weight:600;font-family:var(--font)}
+.sending-overlay.show{display:flex}
+.spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,0.2);border-top-color:var(--teal);border-radius:50%;animation:spin 0.8s linear infinite}
+.warn-banner{background:var(--red);border-radius:12px;padding:18px;margin-bottom:16px;animation:flashWarn 1.5s ease-in-out 3}
+.warn-banner-title{font-size:16px;font-weight:700;color:white;margin-bottom:6px}
+.warn-banner-sub{font-size:14px;color:#FFD5D0;font-weight:600;line-height:1.6}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes flashWarn{0%,100%{opacity:1}50%{opacity:0.4}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">M</div>
+  <div>
+    <div class="co-name">O'Connors Carpentry &amp; Maintenance</div>
+    <div class="form-sublabel" id="headerLabel">Assessment Report</div>
+  </div>
+</header>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="step-dots" id="stepDots"></div>
+<div id="preBanner"></div>
+
+<!-- STEP 1: Job Details -->
+<div class="step active" id="step1">
+  <div class="step-label">Step 1 of 6</div>
+  <div class="step-title">Job details</div>
+
+  <div class="field">
+    <label class="field-label">Report type <span class="req">*</span></label>
+    <div class="pill-group">
+      <button class="pill" data-group="reportType" data-value="Trade Assessment">Trade Assessment</button>
+      <button class="pill" data-group="reportType" data-value="Roof Inspection">Roof Inspection</button>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Client <span class="req">*</span></label>
+    <select id="clientName">
+      <option value="">Select client...</option>
+      <option>ARC Projects</option>
+      <option>HomeRepair</option>
+      <option>CRA Building Services</option>
+      <option>JP Flynn Builders</option>
+      <option>Other</option>
+    </select>
+  </div>
+  <div class="field conditional" id="clientOtherWrap">
+    <label class="field-label">Client name (other)</label>
+    <input type="text" id="clientOther" placeholder="Type client name">
+  </div>
+  <div class="field">
+    <label class="field-label">Claim / job number <span class="req">*</span></label>
+    <input type="text" id="claimNumber" placeholder="e.g. WO123456">
+  </div>
+  <div class="field">
+    <label class="field-label">Customer name <span class="req">*</span></label>
+    <input type="text" id="customerName" placeholder="Full name">
+  </div>
+  <div class="field">
+    <label class="field-label">Site address <span class="req">*</span></label>
+    <input type="text" id="siteAddress" placeholder="Street, suburb, state, postcode">
+  </div>
+  <div class="field">
+    <label class="field-label">Date of inspection <span class="req">*</span></label>
+    <input type="date" id="attendDate">
+  </div>
+  <div class="field">
+    <label class="field-label">Time of inspection</label>
+    <input type="time" id="attendTime">
+  </div>
+  <div class="field">
+    <label class="field-label">Who was present?</label>
+    <div class="pill-group">
+      <button class="pill" data-group="whoPresent" data-value="Homeowner / Occupant">Homeowner</button>
+      <button class="pill" data-group="whoPresent" data-value="Tenant">Tenant</button>
+      <button class="pill" data-group="whoPresent" data-value="Property Manager">Property Manager</button>
+      <button class="pill" data-group="whoPresent" data-value="N/A - No one present">No one</button>
+    </div>
+  </div>
+  <div class="nav-buttons single">
+    <button class="btn btn-next" onclick="goNext(1)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 2: Property Details -->
+<div class="step" id="step2">
+  <div class="step-label">Step 2 of 6</div>
+  <div class="step-title">Property details</div>
+
+  <div class="field">
+    <label class="field-label">Building height</label>
+    <div class="pill-group">
+      <button class="pill" data-group="buildingHeight" data-value="Single storey">Single storey</button>
+      <button class="pill" data-group="buildingHeight" data-value="Double storey">Double storey</button>
+      <button class="pill" data-group="buildingHeight" data-value="Other">Other</button>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Roof type</label>
+    <div class="pill-group">
+      <button class="pill" data-group="roofType" data-value="Tile">Tile</button>
+      <button class="pill" data-group="roofType" data-value="Metal">Metal</button>
+      <button class="pill" data-group="roofType" data-value="Colorbond">Colorbond</button>
+      <button class="pill" data-group="roofType" data-value="Zincalume">Zincalume</button>
+      <button class="pill" data-group="roofType" data-value="Flat membrane">Flat membrane</button>
+      <button class="pill" data-group="roofType" data-value="Other">Other</button>
+    </div>
+  </div>
+
+  <!-- ROOF ONLY -->
+  <div class="roof-only" id="roofSpecificFields">
+    <div class="section-divider"></div>
+    <div class="section-head">Roof details</div>
+    <div class="field">
+      <label class="field-label">Age of roof</label>
+      <div class="pill-group">
+        <button class="pill" data-group="roofAge" data-value="0-5 yrs">0-5 yrs</button>
+        <button class="pill" data-group="roofAge" data-value="5-10 yrs">5-10 yrs</button>
+        <button class="pill" data-group="roofAge" data-value="10-20 yrs">10-20 yrs</button>
+        <button class="pill" data-group="roofAge" data-value="20-30 yrs">20-30 yrs</button>
+        <button class="pill" data-group="roofAge" data-value="30-50 yrs">30-50 yrs</button>
+        <button class="pill" data-group="roofAge" data-value="50+ yrs">50+ yrs</button>
+        <button class="pill" data-group="roofAge" data-value="Unknown">Unknown</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Roof pitch</label>
+      <input type="text" id="roofPitch" placeholder="e.g. 21 deg">
+    </div>
+    <div class="field">
+      <label class="field-label">Roof material</label>
+      <div class="pill-group">
+        <button class="pill" data-group="roofMaterial" data-value="Metal">Metal</button>
+        <button class="pill" data-group="roofMaterial" data-value="Tile">Tile</button>
+        <button class="pill" data-group="roofMaterial" data-value="Colorbond">Colorbond</button>
+        <button class="pill" data-group="roofMaterial" data-value="Other">Other</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Roof condition</label>
+      <div class="pill-group">
+        <button class="pill" data-group="roofCondition" data-value="Poor">Poor</button>
+        <button class="pill" data-group="roofCondition" data-value="Fair">Fair</button>
+        <button class="pill" data-group="roofCondition" data-value="Good">Good</button>
+        <button class="pill" data-group="roofCondition" data-value="Excellent">Excellent</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Sarking installed?</label>
+      <div class="pill-three">
+        <button class="pill" data-group="sarking" data-value="Yes">Yes</button>
+        <button class="pill" data-group="sarking" data-value="No">No</button>
+        <button class="pill" data-group="sarking" data-value="Unable to determine">N/A</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Ceiling insulation installed?</label>
+      <div class="pill-three">
+        <button class="pill" data-group="insulation" data-value="Yes">Yes</button>
+        <button class="pill" data-group="insulation" data-value="No">No</button>
+        <button class="pill" data-group="insulation" data-value="Unable to determine">N/A</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Roof compliant with current building guidelines?</label>
+      <div class="pill-yes-no">
+        <button class="pill-yn" data-group="roofCompliant" data-value="Yes">Yes</button>
+        <button class="pill-yn" data-group="roofCompliant" data-value="No">No</button>
+      </div>
+      <div class="conditional" id="roofCompliantDescWrap">
+        <label class="field-label" style="margin-top:10px">Reasons why not</label>
+        <textarea id="roofCompliantDesc" rows="2" placeholder="Describe non-compliance..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(2)">&larr; Back</button>
+    <button class="btn btn-next" onclick="goNext(2)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 3: Damage & Cause -->
+<div class="step" id="step3">
+  <div class="step-label">Step 3 of 6</div>
+  <div class="step-title">Damage &amp; cause</div>
+
+  <div class="field">
+    <label class="field-label">What is the customer reporting? <span class="req">*</span></label>
+    <textarea id="customerReport" rows="3" placeholder="What the customer told you when you arrived..."></textarea>
+  </div>
+  <div class="field">
+    <label class="field-label">What damage did you see? <span class="req">*</span></label>
+    <textarea id="damageObserved" rows="4" placeholder="Describe observed damage — location, extent, condition..."></textarea>
+  </div>
+
+  <!-- ROOF ONLY -->
+  <div class="roof-only" id="roofDamageFields">
+    <div class="field">
+      <label class="field-label">Percentage of roof affected</label>
+      <div class="pill-group">
+        <button class="pill" data-group="roofPctAffected" data-value="0%">0%</button>
+        <button class="pill" data-group="roofPctAffected" data-value="1-10%">1-10%</button>
+        <button class="pill" data-group="roofPctAffected" data-value="10-25%">10-25%</button>
+        <button class="pill" data-group="roofPctAffected" data-value="25-50%">25-50%</button>
+        <button class="pill" data-group="roofPctAffected" data-value="50-75%">50-75%</button>
+        <button class="pill" data-group="roofPctAffected" data-value="75-100%">75-100%</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Damage from water entry through the roof?</label>
+      <div class="pill-yes-no">
+        <button class="pill-yn" data-group="waterEntry" data-value="Yes">Yes</button>
+        <button class="pill-yn" data-group="waterEntry" data-value="No">No</button>
+      </div>
+      <div class="conditional" id="waterEntryRoomsWrap">
+        <label class="field-label" style="margin-top:10px">Which rooms?</label>
+        <textarea id="waterEntryRooms" rows="2" placeholder="List affected rooms..."></textarea>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Repairs required to stop water ingress</label>
+      <textarea id="waterIngressRepairs" rows="3" placeholder="Describe repairs required, or 'No repairs required'..."></textarea>
+    </div>
+    <div class="field">
+      <label class="field-label">Has a make safe been completed?</label>
+      <div class="pill-yes-no">
+        <button class="pill-yn" data-group="makeSafeCompleted" data-value="Yes">Yes</button>
+        <button class="pill-yn" data-group="makeSafeCompleted" data-value="No">No</button>
+      </div>
+      <div class="conditional" id="makeSafeDescWrap">
+        <label class="field-label" style="margin-top:10px">Description</label>
+        <textarea id="makeSafeDesc" rows="2" placeholder="Describe make safe works..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">What caused the damage? <span class="req">*</span></label>
+    <textarea id="causeOfDamage" rows="3" placeholder="e.g. Storm water ingress through failed ridge capping..."></textarea>
+  </div>
+  <div class="field">
+    <label class="field-label">Is damage from a single cause?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="singleCause" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="singleCause" data-value="No">No</button>
+    </div>
+    <div class="conditional" id="singleCauseDescWrap">
+      <label class="field-label" style="margin-top:10px">Describe multiple causes</label>
+      <textarea id="singleCauseDesc" rows="2" placeholder="Describe causes..."></textarea>
+    </div>
+  </div>
+  <div class="field trade-only" id="areasAffectedSection">
+    <label class="field-label">Areas/rooms affected</label>
+    <div id="affectedRooms"></div>
+    <button type="button" id="addAffectedRoomBtn" style="width:100%;padding:12px;border-radius:var(--radius);border:2px dashed var(--teal);background:var(--teal-light);color:var(--teal-dark);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;">+ Add attendance photo group</button>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(3)">&larr; Back</button>
+    <button class="btn btn-next" onclick="goNext(3)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 4: Evaluation -->
+<div class="step" id="step4">
+  <div class="step-label">Step 4 of 6</div>
+  <div class="step-title">Evaluation</div>
+
+  <div class="field">
+    <label class="field-label">Is there carpet / flooring damage?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="carpetDamage" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="carpetDamage" data-value="No">No</button>
+    </div>
+    <div class="conditional" id="carpetRoomsWrap">
+      <label class="field-label" style="margin-top:10px">Which rooms?</label>
+      <div id="carpetRoomsList" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;"></div>
+      <select id="carpetRoomSelect" style="width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:13px 14px;font-family:var(--font);font-size:16px;color:var(--dark);appearance:none;-webkit-appearance:none;outline:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;">
+        <option value="">Add a room...</option>
+      </select>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Is restoration required?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="restorationRequired" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="restorationRequired" data-value="No">No</button>
+    </div>
+    <div class="conditional" id="restorationDescWrap">
+      <label class="field-label" style="margin-top:10px">Description</label>
+      <textarea id="restorationDesc" rows="2" placeholder="Describe restoration required..."></textarea>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Pre-1990 construction?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="pre1990" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="pre1990" data-value="No">No</button>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Asbestos (ACM) removal required?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="asbestos" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="asbestos" data-value="No">No</button>
+    </div>
+    <div class="conditional" id="asbestosDescWrap">
+      <label class="field-label" style="margin-top:10px">Description</label>
+      <textarea id="asbestosDesc" rows="2" placeholder="Describe asbestos location and extent..."></textarea>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Can repairs proceed without delay?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="repairsCanProceed" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="repairsCanProceed" data-value="No">No</button>
+    </div>
+    <div class="conditional" id="repairsDelayWrap">
+      <label class="field-label" style="margin-top:10px">Why not?</label>
+      <textarea id="repairsDelayDesc" rows="2" placeholder="Explain the delay reason..."></textarea>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Pre-existing or unrelated damage?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="preExisting" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="preExisting" data-value="No">No</button>
+    </div>
+    <div class="conditional" id="preExistingDescWrap">
+      <label class="field-label" style="margin-top:10px">Description</label>
+      <textarea id="preExistingDesc" rows="2" placeholder="Describe pre-existing damage..."></textarea>
+    </div>
+  </div>
+
+  <!-- ROOF ONLY -->
+  <div class="roof-only" id="roofEvalFields">
+    <div class="section-divider"></div>
+    <div class="section-head">Roof evaluation</div>
+    <div class="field">
+      <label class="field-label">Result of long term deterioration or design/installation defect?</label>
+      <div class="pill-yes-no">
+        <button class="pill-yn" data-group="longTermDet" data-value="Yes">Yes</button>
+        <button class="pill-yn" data-group="longTermDet" data-value="No">No</button>
+      </div>
+      <div class="conditional" id="longTermDetDescWrap">
+        <label class="field-label" style="margin-top:10px">Description</label>
+        <textarea id="longTermDetDesc" rows="3" placeholder="Describe the defect and maintenance repairs required..."></textarea>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Actions taken</label>
+      <div class="pill-group">
+        <button class="pill" data-group="actionsTaken" data-value="Assessment Only">Assessment Only</button>
+        <button class="pill" data-group="actionsTaken" data-value="Repairs Completed">Repairs Completed</button>
+        <button class="pill" data-group="actionsTaken" data-value="Makesafe Completed">Makesafe Completed</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Maintenance issues identified</label>
+    <textarea id="maintenanceIssues" rows="3" placeholder="Any maintenance the customer should address..."></textarea>
+  </div>
+  <div class="field">
+    <label class="field-label">Customer conversation / additional observations</label>
+    <textarea id="customerConvo" rows="3" placeholder="Key points from your conversation with the customer..."></textarea>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(4)">&larr; Back</button>
+    <button class="btn btn-next" onclick="goNext(4)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 5: Scope -->
+<div class="step" id="step5">
+  <div class="step-label">Step 5 of 6</div>
+  <div class="step-title">Scope of works</div>
+
+  <!-- Trade Assessment scope — room linked items -->
+  <div class="trade-only" id="tradeScope">
+    <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.5;">Select a room then describe the works required. Rooms and sizes are pulled from what you entered earlier.</p>
+    <div class="field">
+      <label class="field-label">Scope items <span class="req">*</span></label>
+      <div id="scopeItems"></div>
+      <button type="button" id="addScopeItemBtn" style="width:100%;padding:12px;border-radius:var(--radius);border:2px dashed var(--teal);background:var(--teal-light);color:var(--teal-dark);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;">+ Add scope item</button>
+    </div>
+    <div class="field">
+      <label class="field-label">Additional scope notes</label>
+      <textarea id="scopeNotes" rows="4" placeholder="Any additional notes or items not covered above..."></textarea>
+    </div>
+  </div>
+
+  <!-- Roof Inspection scope — simple text box -->
+  <div class="roof-only" id="roofScope">
+    <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.5;">Describe the damage observed and works required to the roof.</p>
+    <div class="field">
+      <label class="field-label">Roof damage and works required <span class="req">*</span></label>
+      <textarea id="roofScopeNotes" rows="10" placeholder="e.g.&#10;Ridge capping failed at northern elevation — repoint all ridge caps&#10;3x cracked tiles to main roof — replace&#10;Valley flashing corroded — replace full valley&#10;Guttering blocked — clean and clear"></textarea>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Specialist reports obtained?</label>
+    <div class="pill-yes-no">
+      <button class="pill-yn" data-group="specialistReport" data-value="Yes">Yes</button>
+      <button class="pill-yn" data-group="specialistReport" data-value="No">No</button>
+    </div>
+    <div class="conditional" id="specialistReportDescWrap">
+      <label class="field-label" style="margin-top:10px">Details</label>
+      <textarea id="specialistReportDesc" rows="2" placeholder="Who obtained it and what did it find..."></textarea>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Additional notes for Liam</label>
+    <textarea id="additionalNotes" rows="3" placeholder="Anything else Liam should know before writing the report..."></textarea>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(5)">&larr; Back</button>
+    <button class="btn btn-next" onclick="goNext(5)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 6: Photos -->
+<div class="step" id="step6">
+  <div class="step-label">Step 6 of 6</div>
+  <div class="step-title">Photos</div>
+
+  <div id="warnBanner" style="margin-bottom:20px;"></div>
+
+  <!-- Front of House -->
+  <div class="field">
+    <label class="field-label">Front of house photo <span class="req">*</span></label>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">Overview of the full property frontage.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="photo-upload-area" id="fohUploadArea" onclick="document.getElementById('fohCameraInput').click()" style="padding:16px">
+        <input type="file" id="fohCameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleFOHPhoto(this.files)">
+        <div class="photo-upload-icon">&#x1F3E0;</div>
+        <div class="photo-upload-label" style="font-size:13px">Take photo</div>
+      </div>
+      <div class="photo-upload-area" onclick="document.getElementById('fohLibraryInput').click()" style="padding:16px">
+        <input type="file" id="fohLibraryInput" accept="image/*" style="display:none" onchange="handleFOHPhoto(this.files)">
+        <div class="photo-upload-icon">&#x1F5BC;&#xFE0F;</div>
+        <div class="photo-upload-label" style="font-size:13px">From library</div>
+      </div>
+    </div>
+    <div class="upload-status" id="fohStatus"></div>
+    <div class="photo-thumbs" id="fohThumbs"></div>
+  </div>
+
+  <div class="section-divider"></div>
+  <p style="font-size:13px;font-weight:600;color:var(--mid);margin-bottom:12px;">Attendance photos</p>
+
+  <!-- Room sections container -->
+  <div id="roomSections"></div>
+
+  <button type="button" id="addRoomBtn" style="width:100%;padding:14px;border-radius:var(--radius);border:2px dashed var(--teal);background:var(--teal-light);color:var(--teal-dark);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;margin-bottom:20px;">
+    + Add attendance photo group
+  </button>
+
+  <!-- Checklist -->
+  <div class="field">
+    <label class="field-label">Photo checklist — tick each one <span class="req">*</span></label>
+    <div id="photoChecklist" style="background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">Front of house photo uploaded</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">All damaged / affected areas photographed</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">Close-up of cause / defect identified</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">Mud map / room layout noted (if applicable)</div>
+      </div>
+      <div class="check-item" style="border-bottom:none" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div id="photoUploadLabel" style="font-size:14px;color:var(--dark)">Photos uploaded</div>
+      </div>
+    </div>
+    <div id="checklistError" class="error-msg">Please tick all items before submitting.</div>
+  </div>
+
+  <div id="submitError" class="error-msg">Something went wrong. Please try again or screenshot and send to Liam.</div>
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(6)">&larr; Back</button>
+    <button class="btn btn-submit" onclick="submitForm()">Submit report &rarr;</button>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-screen" id="successScreen">
+  <div class="success-icon">&#x2713;</div>
+  <div class="success-title">Report sent!</div>
+  <div class="success-sub">Liam has received your assessment details and will prepare the report.</div>
+  <div style="margin-top:28px;background:#FFF3F3;border:2px solid var(--red);border-radius:12px;padding:20px;text-align:left;">
+    <div style="font-size:16px;font-weight:700;color:var(--red);margin-bottom:8px;">&#x1F4F8; Before you leave site</div>
+    <div style="font-size:15px;font-weight:700;color:var(--dark);">Upload all photos to Tradify now.</div>
+    <div style="font-size:14px;color:var(--mid);margin-top:6px;line-height:1.6;">Before leaving — not later.</div>
+  </div>
+  <div id="switchReportBox" style="margin-top:16px;background:var(--teal-light);border:2px solid var(--teal);border-radius:12px;padding:20px;text-align:left;">
+    <div style="font-size:15px;font-weight:700;color:var(--teal-dark);margin-bottom:8px;" id="switchReportTitle"></div>
+    <div style="font-size:14px;color:var(--mid);margin-bottom:14px;line-height:1.6;" id="switchReportDesc"></div>
+    <button onclick="startOtherReport()" style="width:100%;padding:14px;background:var(--teal);color:white;border:none;border-radius:var(--radius);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;" id="switchReportBtn"></button>
+  </div>
+</div>
+
+<!-- OVERLAY -->
+<div class="sending-overlay" id="sendingOverlay">
+  <div class="spinner"></div>
+  <div>Sending report...</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+// ── CONFIG ──────────────────────────────────────────────────
+const EMAILJS_PUBLIC_KEY  = 'GKPaT752iXLmDaUF0';
+const EMAILJS_SERVICE_ID  = 'service_osn4h8y';
+const EMAILJS_TEMPLATE_ID = 'template_840qxa9';
+const CLOUDINARY_CLOUD    = 'dvho4onps';
+const CLOUDINARY_PRESET   = 'ocm_photos';
+const GAS_WEBHOOK         = 'https://script.google.com/macros/s/AKfycbxpHpR9EgfFi-C7ACCPNAjMu6ZGTZCrUHcjWibPk4p8dxmFGJqkgMmPR0qfWYkcnaKunA/exec';
+
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+const TOTAL_STEPS = 6;
+let currentStep = 1;
+const sel = {};
+let isRoofInspection = false;
+let driveFolderId = '';
+let jobFolderIdParam = '';
+const fohPhotos = [];
+let roomCounter = 0;
+const roomSections = [];
+
+const ROOM_OPTIONS = [
+  'Lounge','Kitchen','Master Bedroom','Bedroom 2','Bedroom 3',
+  'Bathroom','Ensuite','Laundry','Hallway','Roof Space',
+  'Roof Exterior','Ceiling Damage','Wall Damage','Floor Damage',
+  'Exterior','Subfloor','Garage','Other'
+];
+
+// ── PROGRESS ────────────────────────────────────────────────
+function updateProgress() {
+  document.getElementById('progressFill').style.width = ((currentStep / TOTAL_STEPS) * 100) + '%';
+  var dots = document.getElementById('stepDots');
+  dots.innerHTML = '';
+  for (var i = 1; i <= TOTAL_STEPS; i++) {
+    var d = document.createElement('div');
+    d.className = 'dot' + (i === currentStep ? ' active' : i < currentStep ? ' done' : '');
+    dots.appendChild(d);
+  }
+}
+updateProgress();
+
+// ── URL PARAMS ──────────────────────────────────────────────
+(function() {
+  try {
+    var p = new URLSearchParams(window.location.search);
+    function setVal(id, val) { if (val) { var el = document.getElementById(id); if (el) el.value = val; } }
+    setVal('customerName', p.get('customer'));
+    setVal('siteAddress',  p.get('address'));
+    setVal('claimNumber',  p.get('claim'));
+    var dateParam = p.get('date');
+    if (dateParam) setVal('attendDate', dateParam);
+    var clientParam = p.get('client');
+    if (clientParam) {
+      var sl = document.getElementById('clientName');
+      for (var i = 0; i < sl.options.length; i++) {
+        if (sl.options[i].value === clientParam) { sl.value = clientParam; break; }
+      }
+    }
+    driveFolderId = p.get('folderid') || '';
+    jobFolderIdParam = p.get('jobfolderid') || '';
+
+    // Pre-select report type if passed in URL
+    var typeParam = p.get('type');
+    if (typeParam) {
+      var typePill = document.querySelector('.pill[data-group="reportType"][data-value="' + typeParam + '"]');
+      if (typePill) {
+        typePill.click();
+      }
+    }
+    var photosParam = p.get('photos');
+    var banner = document.getElementById('warnBanner');
+    if (photosParam) {
+      document.getElementById('photoUploadLabel').textContent = 'Photos uploaded to Drive job folder';
+      banner.innerHTML = '<div class="warn-banner"><div class="warn-banner-title">UPLOAD ALL PHOTOS BEFORE LEAVING SITE</div><div class="warn-banner-sub">Upload photos to the Drive job folder now.</div></div>';
+    } else {
+      banner.innerHTML = '<div class="warn-banner"><div class="warn-banner-title">UPLOAD ALL PHOTOS TO TRADIFY BEFORE LEAVING SITE</div><div class="warn-banner-sub">All photos must be uploaded while on site. Do not leave without doing this.</div></div>';
+    }
+    if (p.get('customer') || p.get('claim')) {
+      var b = document.createElement('div');
+      b.style.cssText = 'background:#E8F7F7;border-bottom:2px solid #2AABAB;padding:10px 20px;font-size:13px;font-weight:600;color:#1A8A8A;text-align:center;';
+      b.textContent = 'Job details pre-filled by Liam';
+      document.querySelector('header').insertAdjacentElement('afterend', b);
+    }
+  } catch(e) { console.log('URL params error:', e); }
+})();
+
+// ── PILL SELECTION ──────────────────────────────────────────
+document.querySelectorAll('.pill, .pill-yn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var group = this.dataset.group;
+    var val   = this.dataset.value;
+    sel[group] = val;
+
+    if (this.classList.contains('pill-yn')) {
+      document.querySelectorAll('.pill-yn[data-group="' + group + '"]').forEach(function(b) {
+        b.classList.remove('sel-yes', 'sel-no');
+      });
+      this.classList.add(val === 'Yes' ? 'sel-yes' : 'sel-no');
+      var showYes = ['waterEntry','makeSafeCompleted',
+                     'restorationRequired','asbestos','longTermDet','specialistReport','preExisting','carpetDamage'];
+      var showNo  = ['repairsCanProceed','singleCause','roofCompliant'];
+      var wrapMap = {
+        roofCompliant: 'roofCompliantDescWrap', waterEntry: 'waterEntryRoomsWrap',
+        makeSafeCompleted: 'makeSafeDescWrap', singleCause: 'singleCauseDescWrap',
+        restorationRequired: 'restorationDescWrap', asbestos: 'asbestosDescWrap',
+        repairsCanProceed: 'repairsDelayWrap', preExisting: 'preExistingDescWrap',
+        longTermDet: 'longTermDetDescWrap', specialistReport: 'specialistReportDescWrap',
+        carpetDamage: 'carpetRoomsWrap',
+      };
+      if (wrapMap[group]) {
+        var wrap = document.getElementById(wrapMap[group]);
+        if (wrap) {
+          if (showYes.indexOf(group) !== -1) wrap.classList.toggle('show', val === 'Yes');
+          if (showNo.indexOf(group) !== -1)  wrap.classList.toggle('show', val === 'No');
+        }
+      }
+    } else {
+      document.querySelectorAll('.pill[data-group="' + group + '"]').forEach(function(b) {
+        b.classList.remove('selected');
+      });
+      this.classList.add('selected');
+      if (group === 'reportType') {
+        isRoofInspection = (val === 'Roof Inspection');
+        document.getElementById('headerLabel').textContent = isRoofInspection ? 'Roof Inspection Report' : 'Trade Assessment Report';
+        document.querySelectorAll('.roof-only').forEach(function(el) {
+          el.classList.toggle('show', isRoofInspection);
+        });
+        document.querySelectorAll('.trade-only').forEach(function(el) {
+          el.classList.toggle('hide', isRoofInspection);
+        });
+        // Reset scope so it reinitialises correctly for the selected type
+        scopeInitialised = false;
+        document.getElementById('scopeItems').innerHTML = '';
+        scopeItemsData = [];
+        scopeItemCounter = 0;
+      }
+    }
+  });
+});
+
+document.getElementById('clientName').addEventListener('change', function() {
+  document.getElementById('clientOtherWrap').classList.toggle('show', this.value === 'Other');
+});
+
+// ── NAVIGATION ──────────────────────────────────────────────
+function showStep(n) {
+  document.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById('step' + n).classList.add('active');
+  currentStep = n;
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goNext(from) { if (validateStep(from)) showStep(from + 1); }
+function goBack(from) { showStep(from - 1); }
+
+function validateStep(step) {
+  if (step === 1) {
+    if (!sel['reportType'] ||
+        !document.getElementById('clientName').value ||
+        !document.getElementById('claimNumber').value.trim() ||
+        !document.getElementById('customerName').value.trim() ||
+        !document.getElementById('siteAddress').value.trim() ||
+        !document.getElementById('attendDate').value) {
+      alert('Please fill in all required fields marked with *');
+      return false;
+    }
+  }
+  if (step === 3) {
+    if (!document.getElementById('customerReport').value.trim() ||
+        !document.getElementById('damageObserved').value.trim() ||
+        !document.getElementById('causeOfDamage').value.trim()) {
+      alert('Please fill in all required fields marked with *');
+      return false;
+    }
+  }
+  if (step === 5) {
+    if (isRoofInspection) {
+      if (!document.getElementById('roofScopeNotes').value.trim()) {
+        alert('Please describe the roof damage and works required.');
+        return false;
+      }
+    } else {
+      var hasScope = scopeItemsData.some(function(e) { return e.works.trim(); });
+      if (!hasScope && !document.getElementById('scopeNotes').value.trim()) {
+        alert('Please add at least one scope item.');
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+// ── CLOUDINARY UPLOAD ────────────────────────────────────────
+async function uploadToCloudinary(file, tag) {
+  var fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLOUDINARY_PRESET);
+  fd.append('tags', tag);
+  fd.append('folder', 'ocm_photos');
+  var r = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload', { method: 'POST', body: fd });
+  var d = await r.json();
+  if (!d.secure_url) throw new Error('Upload failed');
+  return d.secure_url;
+}
+
+// ── FOH PHOTO ────────────────────────────────────────────────
+async function handleFOHPhoto(files) {
+  if (!files || files.length === 0) return;
+  var statusEl = document.getElementById('fohStatus');
+  var thumbsEl = document.getElementById('fohThumbs');
+  var areaEl   = document.getElementById('fohUploadArea');
+  statusEl.classList.add('show');
+  var claim    = document.getElementById('claimNumber').value.trim() || 'job';
+  var customer = document.getElementById('customerName').value.trim().replace(/\s+/g, '-') || 'customer';
+  var tag      = claim + '-' + customer + '-foh';
+  statusEl.textContent = 'Uploading...';
+  var localUrl = URL.createObjectURL(files[0]);
+  var img = document.createElement('img');
+  img.src = localUrl; img.className = 'photo-thumb'; img.style.opacity = '0.4';
+  thumbsEl.appendChild(img);
+  try {
+    var url = await uploadToCloudinary(files[0], tag);
+    fohPhotos.push(url);
+    img.style.opacity = '1';
+    areaEl.classList.add('has-photos');
+    statusEl.textContent = '1 photo uploaded';
+  } catch(e) {
+    statusEl.textContent = 'Upload failed — check connection and try again.';
+    img.style.opacity = '0.2';
+  }
+}
+
+// ── ROOM SECTIONS ────────────────────────────────────────────
+function addRoomSection() {
+  roomCounter++;
+  var id = 'room_' + roomCounter;
+  var section = { id: id, name: '', urls: [] };
+  roomSections.push(section);
+
+  var container = document.getElementById('roomSections');
+  var div = document.createElement('div');
+  div.id = 'section_' + id;
+  div.style.cssText = 'background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;';
+
+  // Header
+  var header = document.createElement('div');
+  header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
+  var titleEl = document.createElement('div');
+  titleEl.style.cssText = 'font-size:13px;font-weight:700;color:var(--teal-dark);';
+  titleEl.textContent = 'Photo group ' + roomCounter;
+  var rmvBtn = document.createElement('button');
+  rmvBtn.type = 'button';
+  rmvBtn.textContent = '\u00D7';
+  rmvBtn.style.cssText = 'background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;';
+  rmvBtn.addEventListener('click', function() { removeRoomSection(id); });
+  header.appendChild(titleEl);
+  header.appendChild(rmvBtn);
+  div.appendChild(header);
+
+  // Select
+  var selectWrap = document.createElement('div');
+  selectWrap.style.marginBottom = '12px';
+  var selectLbl = document.createElement('label');
+  selectLbl.style.cssText = 'display:block;font-size:13px;font-weight:600;color:var(--mid);margin-bottom:6px;';
+  selectLbl.textContent = 'Room / area';
+  var roomSel = document.createElement('select');
+  roomSel.style.cssText = 'width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:13px 14px;font-family:var(--font);font-size:16px;color:var(--dark);appearance:none;-webkit-appearance:none;outline:none;';
+  var defOpt = document.createElement('option');
+  defOpt.value = ''; defOpt.textContent = 'Select room / area...';
+  roomSel.appendChild(defOpt);
+  ROOM_OPTIONS.forEach(function(r) {
+    var o = document.createElement('option'); o.value = r; o.textContent = r;
+    roomSel.appendChild(o);
+  });
+  selectWrap.appendChild(selectLbl);
+  selectWrap.appendChild(roomSel);
+  div.appendChild(selectWrap);
+
+  // Other input
+  var otherWrap = document.createElement('div');
+  otherWrap.style.cssText = 'display:none;margin-bottom:12px;';
+  var otherLbl = document.createElement('label');
+  otherLbl.style.cssText = 'display:block;font-size:13px;font-weight:600;color:var(--mid);margin-bottom:6px;';
+  otherLbl.textContent = 'Area name';
+  var otherInput = document.createElement('input');
+  otherInput.type = 'text';
+  otherInput.placeholder = 'e.g. Ridge Line, Valley Flashing, Roof Space...';
+  otherInput.style.cssText = 'width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:13px 14px;font-family:var(--font);font-size:16px;color:var(--dark);outline:none;box-sizing:border-box;';
+  otherWrap.appendChild(otherLbl);
+  otherWrap.appendChild(otherInput);
+  div.appendChild(otherWrap);
+
+  roomSel.addEventListener('change', function() {
+    otherWrap.style.display = this.value === 'Other' ? 'block' : 'none';
+    section.name = this.value === 'Other' ? '' : this.value;
+  });
+  otherInput.addEventListener('input', function() { section.name = this.value; });
+
+  // Photo buttons
+  var photoLbl = document.createElement('label');
+  photoLbl.style.cssText = 'display:block;font-size:13px;font-weight:600;color:var(--mid);margin-bottom:6px;';
+  photoLbl.textContent = 'Photos';
+  div.appendChild(photoLbl);
+
+  var btnGrid = document.createElement('div');
+  btnGrid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:10px;';
+
+  var camArea = document.createElement('div');
+  camArea.className = 'photo-upload-area';
+  camArea.style.padding = '14px';
+  camArea.innerHTML = '<div style="font-size:24px;margin-bottom:4px;">&#x1F4F7;</div><div style="font-size:13px;font-weight:600;color:var(--mid);">Take photo</div>';
+
+  var libArea = document.createElement('div');
+  libArea.className = 'photo-upload-area';
+  libArea.style.padding = '14px';
+  libArea.innerHTML = '<div style="font-size:24px;margin-bottom:4px;">&#x1F5BC;&#xFE0F;</div><div style="font-size:13px;font-weight:600;color:var(--mid);">From library</div>';
+
+  var camInput = document.createElement('input');
+  camInput.type = 'file'; camInput.accept = 'image/*';
+  camInput.setAttribute('capture', 'environment');
+  camInput.multiple = true; camInput.style.display = 'none';
+
+  var libInput = document.createElement('input');
+  libInput.type = 'file'; libInput.accept = 'image/*';
+  libInput.multiple = true; libInput.style.display = 'none';
+
+  camArea.appendChild(camInput);
+  libArea.appendChild(libInput);
+  btnGrid.appendChild(camArea);
+  btnGrid.appendChild(libArea);
+  div.appendChild(btnGrid);
+
+  var statusEl = document.createElement('div');
+  statusEl.className = 'upload-status';
+  div.appendChild(statusEl);
+
+  var thumbsEl = document.createElement('div');
+  thumbsEl.className = 'photo-thumbs';
+  div.appendChild(thumbsEl);
+
+  camArea.addEventListener('click', function() { camInput.click(); });
+  libArea.addEventListener('click', function() { libInput.click(); });
+
+  camInput.addEventListener('change', function() {
+    uploadRoomPhotos(section, camArea, statusEl, thumbsEl, this.files);
+  });
+  libInput.addEventListener('change', function() {
+    uploadRoomPhotos(section, libArea, statusEl, thumbsEl, this.files);
+  });
+
+  // Notes field for this room's photos
+  var notesLbl = document.createElement('label');
+  notesLbl.style.cssText = 'display:block;font-size:13px;font-weight:600;color:var(--mid);margin-top:10px;margin-bottom:6px;';
+  notesLbl.textContent = 'Notes for these photos (optional)';
+  var notesInput = document.createElement('textarea');
+  notesInput.rows = 2;
+  notesInput.placeholder = 'Describe what these photos show...';
+  notesInput.style.cssText = 'width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:var(--font);font-size:14px;color:var(--dark);outline:none;resize:none;line-height:1.5;box-sizing:border-box;';
+  notesInput.addEventListener('input', function() { section.notes = this.value; });
+  section.notes = '';
+  div.appendChild(notesLbl);
+  div.appendChild(notesInput);
+
+  container.appendChild(div);
+}
+
+function removeRoomSection(id) {
+  var idx = roomSections.findIndex(function(s) { return s.id === id; });
+  if (idx !== -1) roomSections.splice(idx, 1);
+  var el = document.getElementById('section_' + id);
+  if (el) el.remove();
+}
+
+async function uploadRoomPhotos(section, areaEl, statusEl, thumbsEl, files) {
+  if (!files || files.length === 0) return;
+  statusEl.classList.add('show');
+  var claim    = document.getElementById('claimNumber').value.trim() || 'job';
+  var customer = document.getElementById('customerName').value.trim().replace(/\s+/g, '-') || 'customer';
+  var roomTag  = (section.name || section.id).replace(/\s+/g, '-');
+  var tag      = claim + '-' + customer + '-' + roomTag;
+  var uploaded = 0;
+  for (var i = 0; i < files.length; i++) {
+    statusEl.textContent = 'Uploading ' + (uploaded + 1) + ' of ' + files.length + '...';
+    var localUrl = URL.createObjectURL(files[i]);
+    var img = document.createElement('img');
+    img.src = localUrl; img.className = 'photo-thumb'; img.style.opacity = '0.4';
+    thumbsEl.appendChild(img);
+    try {
+      var url = await uploadToCloudinary(files[i], tag);
+      section.urls.push(url);
+      img.style.opacity = '1';
+      uploaded++;
+    } catch(e) {
+      statusEl.textContent = 'Upload failed — check connection and try again.';
+      img.style.opacity = '0.2';
+      return;
+    }
+  }
+  areaEl.classList.add('has-photos');
+  statusEl.textContent = section.urls.length + ' photo' + (section.urls.length > 1 ? 's' : '') + ' uploaded';
+}
+
+document.getElementById('addRoomBtn').addEventListener('click', addRoomSection);
+
+// Add one default room section
+addRoomSection();
+
+// ── AFFECTED ROOMS (Step 3) ──────────────────────────────────
+var affectedRoomCounter = 0;
+var affectedRoomsData = [];
+
+function initAffectedRooms() {
+  var btn = document.getElementById('addAffectedRoomBtn');
+  if (btn) btn.addEventListener('click', addAffectedRoom);
+  addAffectedRoom(); // one default
+}
+
+function addAffectedRoom() {
+  affectedRoomCounter++;
+  var id = 'affected_' + affectedRoomCounter;
+  var entry = { id: id, room: '', dimensions: '' };
+  affectedRoomsData.push(entry);
+
+  var container = document.getElementById('affectedRooms');
+  var div = document.createElement('div');
+  div.id = 'affectedDiv_' + id;
+  div.style.cssText = 'display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px;';
+
+  var roomSel = document.createElement('select');
+  roomSel.style.cssText = 'background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 10px;font-family:var(--font);font-size:15px;color:var(--dark);appearance:none;-webkit-appearance:none;outline:none;';
+  var defOpt = document.createElement('option');
+  defOpt.value = ''; defOpt.textContent = 'Room...';
+  roomSel.appendChild(defOpt);
+  ROOM_OPTIONS.forEach(function(r) {
+    var o = document.createElement('option'); o.value = r; o.textContent = r;
+    roomSel.appendChild(o);
+  });
+  roomSel.addEventListener('change', function() { entry.room = this.value; });
+
+  var dimInput = document.createElement('input');
+  dimInput.type = 'text';
+  dimInput.placeholder = 'L x W x H (m)';
+  dimInput.style.cssText = 'background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 10px;font-family:var(--font);font-size:15px;color:var(--dark);outline:none;';
+  dimInput.addEventListener('input', function() { entry.dimensions = this.value; });
+
+  var rmvBtn = document.createElement('button');
+  rmvBtn.type = 'button';
+  rmvBtn.textContent = '\u00D7';
+  rmvBtn.style.cssText = 'background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:0 4px;flex-shrink:0;';
+  rmvBtn.addEventListener('click', function() {
+    var idx = affectedRoomsData.findIndex(function(e) { return e.id === id; });
+    if (idx !== -1) affectedRoomsData.splice(idx, 1);
+    div.remove();
+  });
+
+  div.appendChild(roomSel);
+  div.appendChild(dimInput);
+  div.appendChild(rmvBtn);
+  container.appendChild(div);
+}
+
+window.getAffectedRoomsData = function() {
+  var parts = affectedRoomsData
+    .filter(function(e) { return e.room; })
+    .map(function(e) { return e.room + (e.dimensions ? ' - ' + e.dimensions : ''); });
+  return parts.length ? parts.join(', ') : 'Not specified';
+};
+
+// ── CARPET ROOMS (Step 4) ────────────────────────────────────
+var carpetRoomsSelected = [];
+window.carpetRoomsSelected = carpetRoomsSelected;
+
+function initCarpetRooms() {
+  var sel = document.getElementById('carpetRoomSelect');
+  if (!sel) return;
+  ROOM_OPTIONS.forEach(function(r) {
+    var o = document.createElement('option'); o.value = r; o.textContent = r;
+    sel.appendChild(o);
+  });
+  sel.addEventListener('change', function() {
+    if (!this.value) return;
+    var val = this.value;
+    if (carpetRoomsSelected.indexOf(val) !== -1) { this.value = ''; return; }
+    carpetRoomsSelected.push(val);
+    var list = document.getElementById('carpetRoomsList');
+    var tag = document.createElement('div');
+    tag.style.cssText = 'background:var(--teal-light);border:1.5px solid var(--teal);border-radius:100px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--teal-dark);display:flex;align-items:center;gap:6px;cursor:pointer;';
+    tag.innerHTML = val + ' <span style="font-size:16px;line-height:1;">&times;</span>';
+    tag.addEventListener('click', function() {
+      var idx = carpetRoomsSelected.indexOf(val);
+      if (idx !== -1) carpetRoomsSelected.splice(idx, 1);
+      tag.remove();
+    });
+    list.appendChild(tag);
+    this.value = '';
+  });
+}
+
+// ── SCOPE ITEMS (Step 5) — variables declared before init ───
+var scopeItemCounter = 0;
+var scopeItemsData = [];
+
+// Init dynamic fields after DOM ready
+initAffectedRooms();
+initCarpetRooms();
+initScopeItems();
+
+function initScopeItems() {
+  var btn = document.getElementById('addScopeItemBtn');
+  if (btn) btn.addEventListener('click', addScopeItem);
+  // Don't add default item on init — add it when worker reaches step 5
+}
+
+function getScopeRoomOptions() {
+  // Pull rooms from affected rooms data, fall back to full ROOM_OPTIONS
+  var rooms = affectedRoomsData
+    .filter(function(e) { return e.room; })
+    .map(function(e) { return e.room + (e.dimensions ? ' (' + e.dimensions + ')' : ''); });
+  return rooms.length ? rooms : ROOM_OPTIONS.map(function(r) { return r; });
+}
+
+function addScopeItem() {
+  scopeItemCounter++;
+  var id = 'scope_' + scopeItemCounter;
+  var entry = { id: id, room: '', works: '' };
+  scopeItemsData.push(entry);
+
+  var container = document.getElementById('scopeItems');
+  var div = document.createElement('div');
+  div.id = 'scopeDiv_' + id;
+  div.style.cssText = 'background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;';
+
+  // Row header
+  var header = document.createElement('div');
+  header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;';
+  var title = document.createElement('div');
+  title.style.cssText = 'font-size:12px;font-weight:700;color:var(--teal-dark);text-transform:uppercase;letter-spacing:0.06em;';
+  title.textContent = 'Item ' + scopeItemCounter;
+  var rmv = document.createElement('button');
+  rmv.type = 'button'; rmv.textContent = '×';
+  rmv.style.cssText = 'background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;';
+  rmv.addEventListener('click', function() {
+    var idx = scopeItemsData.findIndex(function(e) { return e.id === id; });
+    if (idx !== -1) scopeItemsData.splice(idx, 1);
+    div.remove();
+  });
+  header.appendChild(title); header.appendChild(rmv);
+  div.appendChild(header);
+
+  // Room select
+  var roomLbl = document.createElement('label');
+  roomLbl.style.cssText = 'display:block;font-size:13px;font-weight:600;color:var(--mid);margin-bottom:6px;';
+  roomLbl.textContent = 'Room / area';
+  var roomSel = document.createElement('select');
+  roomSel.style.cssText = 'width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;font-family:var(--font);font-size:15px;color:var(--dark);appearance:none;-webkit-appearance:none;outline:none;margin-bottom:10px;';
+  var defOpt = document.createElement('option'); defOpt.value = ''; defOpt.textContent = 'Select room...';
+  roomSel.appendChild(defOpt);
+  // Get rooms from affected rooms or full list
+  var roomOpts = getScopeRoomOptions();
+  roomOpts.forEach(function(r) {
+    var o = document.createElement('option'); o.value = r; o.textContent = r;
+    roomSel.appendChild(o);
+  });
+  roomSel.addEventListener('change', function() { entry.room = this.value; });
+  div.appendChild(roomLbl);
+  div.appendChild(roomSel);
+
+  // Works description
+  var worksLbl = document.createElement('label');
+  worksLbl.style.cssText = 'display:block;font-size:13px;font-weight:600;color:var(--mid);margin-bottom:6px;';
+  worksLbl.textContent = 'Works required';
+  var worksInput = document.createElement('textarea');
+  worksInput.rows = 3;
+  worksInput.placeholder = 'e.g. Replace plasterboard to ceiling, set and paint to match';
+  worksInput.style.cssText = 'width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;font-family:var(--font);font-size:15px;color:var(--dark);outline:none;resize:none;line-height:1.5;box-sizing:border-box;';
+  worksInput.addEventListener('input', function() { entry.works = this.value; });
+  div.appendChild(worksLbl);
+  div.appendChild(worksInput);
+
+  container.appendChild(div);
+}
+
+// Refresh scope room dropdowns when moving to step 5
+var scopeInitialised = false;
+var origShowStep = showStep;
+showStep = function(n) {
+  origShowStep(n);
+  if (n === 5) {
+    // Add default item on first visit to step 5
+    if (!scopeInitialised) {
+      scopeInitialised = true;
+      addScopeItem();
+    }
+    // Rebuild room options in all existing scope items with latest affected rooms
+    document.querySelectorAll('#scopeItems select').forEach(function(sel) {
+      var currentVal = sel.value;
+      while (sel.options.length > 1) sel.remove(1);
+      getScopeRoomOptions().forEach(function(r) {
+        var o = document.createElement('option'); o.value = r; o.textContent = r;
+        sel.appendChild(o);
+      });
+      if (currentVal) sel.value = currentVal;
+    });
+  }
+};
+
+// ── SWITCH REPORT ───────────────────────────────────────────
+function initSwitchReportBox() {
+  var otherType = isRoofInspection ? 'Trade Assessment' : 'Roof Inspection';
+  var icon = isRoofInspection ? '&#x1F4CB;' : '&#x1F3D7;';
+  document.getElementById('switchReportTitle').innerHTML = icon + ' Need to complete a ' + otherType + '?';
+  document.getElementById('switchReportDesc').textContent = 'If a ' + otherType.toLowerCase() + ' is also required for this job, tap below to start it now with all job details pre-filled.';
+  document.getElementById('switchReportBtn').textContent = 'Start ' + otherType.toLowerCase() + ' report';
+}
+
+function startOtherReport() {
+  // Build URL with current job details pre-filled
+  var otherType = isRoofInspection ? 'Trade Assessment' : 'Roof Inspection';
+  var params = new URLSearchParams();
+  params.set('client',   document.getElementById('clientName').value);
+  params.set('claim',    document.getElementById('claimNumber').value.trim());
+  params.set('customer', document.getElementById('customerName').value.trim());
+  params.set('address',  document.getElementById('siteAddress').value.trim());
+  params.set('date',     document.getElementById('attendDate').value);
+  params.set('type',     otherType);
+  // Pass jobfolderid only — NOT folderid, which belongs to the previous report type
+  if (jobFolderIdParam) params.set('jobfolderid', jobFolderIdParam);
+  window.location.href = 'assessment.html?' + params.toString();
+}
+
+// ── CHECKLIST ───────────────────────────────────────────────
+function toggleCheck(item) {
+  var box = item.querySelector('.check-box');
+  var ticked = box.classList.toggle('ticked');
+  box.textContent = ticked ? '\u2713' : '';
+}
+
+// ── COLLECT DATA ────────────────────────────────────────────
+function collectData() {
+  var clientRaw  = document.getElementById('clientName').value;
+  var client     = clientRaw === 'Other' ? document.getElementById('clientOther').value.trim() : clientRaw;
+  var reportType = sel['reportType'] || 'Trade Assessment';
+  var dateVal    = document.getElementById('attendDate').value;
+  var dateFmt    = dateVal ? (function() {
+    var p = dateVal.split('-');
+    return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : dateVal;
+  })() : 'Not specified';
+
+  var lines = [
+    '=== ' + reportType.toUpperCase() + ' REPORT ===', '',
+    '--- JOB DETAILS ---',
+    'Report Type: ' + reportType,
+    'Client: ' + client,
+    'Claim / Job Number: ' + document.getElementById('claimNumber').value.trim(),
+    'Customer Name: ' + document.getElementById('customerName').value.trim(),
+    'Site Address: ' + document.getElementById('siteAddress').value.trim(),
+    'Date of Inspection: ' + dateFmt,
+    'Time of Inspection: ' + (document.getElementById('attendTime').value || 'Not specified'),
+    'Who was present: ' + (sel['whoPresent'] || 'Not answered'),
+    '',
+    '--- PROPERTY DETAILS ---',
+    'Building Height: ' + (sel['buildingHeight'] || 'Not selected'),
+    'Roof Type: ' + (sel['roofType'] || 'Not selected'),
+  ];
+
+  if (isRoofInspection) {
+    lines.push(
+      'Age of Roof: ' + (sel['roofAge'] || 'Not selected'),
+      'Roof Pitch: ' + (document.getElementById('roofPitch').value.trim() || 'Not specified'),
+      'Roof Material: ' + (sel['roofMaterial'] || 'Not selected'),
+      'Roof Condition: ' + (sel['roofCondition'] || 'Not selected'),
+      'Sarking Installed: ' + (sel['sarking'] || 'Not answered'),
+      'Ceiling Insulation: ' + (sel['insulation'] || 'Not answered'),
+      'Roof Compliant: ' + (sel['roofCompliant'] || 'Not answered'),
+      'Compliance Notes: ' + (document.getElementById('roofCompliantDesc').value.trim() || 'N/A')
+    );
+  }
+
+  lines.push(
+    '',
+    '--- DAMAGE & CAUSE ---',
+    'Customer Report: ' + document.getElementById('customerReport').value.trim(),
+    'Damage Observed: ' + document.getElementById('damageObserved').value.trim()
+  );
+
+  if (isRoofInspection) {
+    lines.push(
+      'Roof % Affected: ' + (sel['roofPctAffected'] || 'Not selected'),
+      'Water Entry Through Roof: ' + (sel['waterEntry'] || 'Not answered'),
+      'Rooms Affected by Water Entry: ' + (document.getElementById('waterEntryRooms').value.trim() || 'N/A'),
+      'Repairs to Stop Ingress: ' + (document.getElementById('waterIngressRepairs').value.trim() || 'Not specified'),
+      'Makesafe Completed: ' + (sel['makeSafeCompleted'] || 'Not answered'),
+      'Makesafe Description: ' + (document.getElementById('makeSafeDesc').value.trim() || 'N/A')
+    );
+  }
+
+  lines.push(
+    'Cause of Damage: ' + document.getElementById('causeOfDamage').value.trim(),
+    'Single Cause: ' + (sel['singleCause'] || 'Not answered'),
+    'Multiple Causes: ' + (document.getElementById('singleCauseDesc').value.trim() || 'N/A'),
+    'Areas Affected: ' + (window.getAffectedRoomsData ? window.getAffectedRoomsData() : 'Not specified'),
+    '',
+    '--- EVALUATION ---',
+    'Carpet / Flooring Damage: ' + (sel['carpetDamage'] || 'Not answered'),
+    'Carpet Rooms: ' + (window.carpetRoomsSelected ? window.carpetRoomsSelected.join(', ') : 'N/A'),
+    'Restoration Required: ' + (sel['restorationRequired'] || 'Not answered'),
+    'Restoration Description: ' + (document.getElementById('restorationDesc').value.trim() || 'N/A'),
+    'Pre-1990 Construction: ' + (sel['pre1990'] || 'Not answered'),
+    'Asbestos Required: ' + (sel['asbestos'] || 'Not answered'),
+    'Asbestos Description: ' + (document.getElementById('asbestosDesc').value.trim() || 'N/A'),
+    'Repairs Can Proceed: ' + (sel['repairsCanProceed'] || 'Not answered'),
+    'Delay Reason: ' + (document.getElementById('repairsDelayDesc').value.trim() || 'N/A'),
+    'Pre-existing Damage: ' + (sel['preExisting'] || 'Not answered'),
+    'Pre-existing Description: ' + (document.getElementById('preExistingDesc').value.trim() || 'N/A')
+  );
+
+  if (isRoofInspection) {
+    lines.push(
+      'Long Term Deterioration / Defect: ' + (sel['longTermDet'] || 'Not answered'),
+      'Deterioration Description: ' + (document.getElementById('longTermDetDesc').value.trim() || 'N/A'),
+      'Actions Taken: ' + (sel['actionsTaken'] || 'Not selected')
+    );
+  }
+
+  lines.push(
+    'Maintenance Issues: ' + (document.getElementById('maintenanceIssues').value.trim() || 'None noted'),
+    'Customer Conversation: ' + (document.getElementById('customerConvo').value.trim() || 'None'),
+    '',
+    '--- SCOPE OF WORKS ---',
+    (function() {
+      if (isRoofInspection) {
+        return document.getElementById('roofScopeNotes').value.trim() || 'Not specified';
+      }
+      var items = scopeItemsData
+        .filter(function(e) { return e.room || e.works; })
+        .map(function(e) { return (e.room || 'General') + ': ' + (e.works || ''); });
+      var extra = document.getElementById('scopeNotes').value.trim();
+      var all = items.concat(extra ? [extra] : []);
+      return all.length ? all.join('\n') : 'Not specified';
+    })(),
+    '',
+    'Specialist Report: ' + (sel['specialistReport'] || 'Not answered'),
+    'Specialist Report Details: ' + (document.getElementById('specialistReportDesc').value.trim() || 'N/A'),
+    'Additional Notes: ' + (document.getElementById('additionalNotes').value.trim() || 'None'),
+    '',
+    '--- PHOTOS ---',
+    'Front of House (' + fohPhotos.length + '): ' + (fohPhotos.length ? fohPhotos.join(' | ') : 'None uploaded'),
+    ''
+  );
+
+  roomSections.forEach(function(s) {
+    lines.push((s.name || 'Unnamed area') + ' (' + s.urls.length + ' photos): ' + (s.urls.length ? s.urls.join(' | ') : 'None uploaded'));
+    if (s.notes) lines.push((s.name || 'Unnamed area') + ' notes: ' + s.notes);
+  });
+
+  return lines.join('\n');
+}
+
+// ── SUBMIT ──────────────────────────────────────────────────
+async function submitForm() {
+  document.getElementById('submitError').classList.remove('show');
+  document.getElementById('checklistError').classList.remove('show');
+
+  var items = document.querySelectorAll('#photoChecklist .check-item');
+  var allTicked = true;
+  items.forEach(function(item) {
+    if (!item.querySelector('.check-box').classList.contains('ticked')) allTicked = false;
+  });
+  if (!allTicked) {
+    document.getElementById('checklistError').classList.add('show');
+    document.getElementById('photoChecklist').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  document.getElementById('sendingOverlay').classList.add('show');
+
+  var customer   = document.getElementById('customerName').value.trim();
+  var claim      = document.getElementById('claimNumber').value.trim();
+  var client     = document.getElementById('clientName').value;
+  var reportType = sel['reportType'] || 'Trade Assessment';
+
+  try {
+    // Fire webhook FIRST — before EmailJS so photos always move regardless of email result
+    var allRoomPhotos = {};
+    roomSections.forEach(function(s) {
+      if (s.urls.length > 0) allRoomPhotos[s.name || s.id] = s.urls;
+    });
+    var hasPhotos = fohPhotos.length > 0 || Object.keys(allRoomPhotos).length > 0;
+
+    if (hasPhotos) {
+      var payload = 'data=' + encodeURIComponent(JSON.stringify({
+        action:           'movePhotos',
+        folderId:         driveFolderId,
+        jobfolderid:      jobFolderIdParam,
+        customer:         customer,
+        claim:            claim,
+        client:           client,
+        reportType:       reportType,
+        fohPhotos:        fohPhotos,
+        attendancePhotos: allRoomPhotos,
+      }));
+      fetch(GAS_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: payload,
+        mode: 'no-cors',
+      }).catch(function(e) { console.log('Webhook error:', e); });
+    }
+
+    // Send EmailJS — if this fails we still show success since photos and webhook already fired
+    try {
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+        to_email:  'liam@oconnorscarpentry.com',
+        subject:   reportType + ' Report - ' + document.getElementById('siteAddress').value.trim() + ' (' + claim + ')',
+        message:   collectData(),
+        from_name: 'Field App',
+      });
+    } catch(emailErr) {
+      console.error('EmailJS error (non-critical — Drive submission still saved):', emailErr);
+    }
+
+    document.getElementById('sendingOverlay').classList.remove('show');
+    document.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById('successScreen').style.display = 'block';
+    initSwitchReportBox();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  } catch(err) {
+    document.getElementById('sendingOverlay').classList.remove('show');
+    document.getElementById('submitError').classList.add('show');
+    console.error('Submit error:', err);
+  }
+}
+</script>
+</body>
+</html>
