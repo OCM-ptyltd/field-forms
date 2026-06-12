@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>O'Connors — Leak Detection</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Josefin+Sans:wght@400;600;700&display=swap');
+:root {
+  --teal:#2AABAB; --teal-light:#E8F7F7; --teal-dark:#1A8A8A;
+  --dark:#1A1A1A; --mid:#555; --muted:#888; --border:#E0DDD8;
+  --bg:#F2F9F9; --white:#FFFFFF;
+  --pass:#1A7A3C; --pass-light:#EAF5EF;
+  --fail:#C0392B; --fail-light:#FDEEEC;
+  --na:#666; --na-light:#F0F0F0;
+  --radius:12px; --font:'DM Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font);background:var(--bg);color:var(--dark);min-height:100vh;padding-bottom:40px}
+header{background:var(--dark);border-bottom:3px solid var(--teal);color:white;padding:18px 20px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+.logo-mark{width:36px;height:36px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;flex-shrink:0}
+.co-name{font-size:13px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;font-family:'Josefin Sans',sans-serif}
+.form-sublabel{font-size:11px;color:#AAA;margin-top:1px;letter-spacing:0.05em;text-transform:uppercase}
+.progress-bar{height:3px;background:#333}
+.progress-fill{height:100%;background:var(--teal);transition:width 0.4s ease}
+.step{display:none;padding:20px}
+.step.active{display:block}
+.step-label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--teal);margin-bottom:6px}
+.step-title{font-size:22px;font-weight:700;color:var(--dark);line-height:1.2;margin-bottom:20px}
+.step-dots{display:flex;gap:6px;justify-content:center;padding:16px 0 0}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:all 0.2s}
+.dot.active{background:var(--teal);width:20px;border-radius:3px}
+.dot.done{background:var(--muted)}
+.field{margin-bottom:18px}
+label.field-label{display:block;font-size:13px;font-weight:600;color:var(--mid);margin-bottom:6px}
+label.field-label .req{color:var(--teal);margin-left:2px}
+input[type="text"],input[type="date"],input[type="time"],select,textarea{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:13px 14px;font-family:var(--font);font-size:16px;color:var(--dark);appearance:none;-webkit-appearance:none;outline:none;transition:border-color 0.15s}
+input:focus,select:focus,textarea:focus{border-color:var(--teal)}
+textarea{resize:none;line-height:1.5}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+/* Pass / Fail / NA buttons */
+.pfn-group{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.pfn-btn{padding:14px 8px;border-radius:var(--radius);border:2px solid var(--border);background:var(--white);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;text-align:center;transition:all 0.15s;color:var(--mid)}
+.pfn-btn.sel-pass{background:var(--pass-light);border-color:var(--pass);color:var(--pass)}
+.pfn-btn.sel-fail{background:var(--fail-light);border-color:var(--fail);color:var(--fail)}
+.pfn-btn.sel-na{background:var(--na-light);border-color:var(--na);color:var(--na)}
+/* Yes/No */
+.yn-group{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.yn-btn{padding:14px;border-radius:var(--radius);border:2px solid var(--border);background:var(--white);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;text-align:center;transition:all 0.15s;color:var(--mid)}
+.yn-btn.sel-yes{background:var(--pass-light);border-color:var(--pass);color:var(--pass)}
+.yn-btn.sel-no{background:var(--fail-light);border-color:var(--fail);color:var(--fail)}
+/* Pill */
+.pill-group{display:flex;flex-wrap:wrap;gap:8px}
+.pill{padding:10px 16px;border-radius:100px;border:1.5px solid var(--border);background:var(--white);font-family:var(--font);font-size:14px;font-weight:500;color:var(--mid);cursor:pointer;transition:all 0.15s}
+.pill.selected{background:var(--teal-light);border-color:var(--teal);color:var(--teal)}
+/* Wet area sections */
+.wet-area{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px}
+.wet-area-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.wet-area-title{font-size:15px;font-weight:700;color:var(--teal-dark)}
+.wet-area-remove{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:0 4px}
+.test-row{margin-bottom:14px}
+.test-label{font-size:13px;font-weight:600;color:var(--mid);margin-bottom:6px}
+.section-divider{height:1px;background:var(--border);margin:18px 0}
+.section-head{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.conditional{display:none;margin-top:12px}
+.conditional.show{display:block}
+/* Navigation */
+.nav-buttons{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:28px}
+.nav-buttons.single{grid-template-columns:1fr}
+.btn{padding:16px;border-radius:var(--radius);font-family:var(--font);font-size:16px;font-weight:700;border:none;cursor:pointer;transition:all 0.15s}
+.btn:active{transform:scale(0.97)}
+.btn-back{background:var(--white);color:var(--mid);border:1.5px solid var(--border)}
+.btn-next{background:var(--teal);color:white}
+.btn-submit{background:var(--dark);color:white;grid-column:1/-1}
+/* Photos */
+.photo-upload-area{border:2px dashed var(--border);border-radius:var(--radius);padding:20px 16px;text-align:center;background:var(--white);cursor:pointer;transition:border-color 0.2s}
+.photo-upload-area.has-photos{border-color:var(--teal);background:var(--teal-light)}
+.photo-thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.photo-thumb{aspect-ratio:1;border-radius:8px;object-fit:cover;width:100%}
+.upload-status{background:var(--teal-light);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--teal-dark);margin-top:8px;display:none}
+.upload-status.show{display:block}
+/* Checklist */
+.check-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer}
+.check-box{width:24px;height:24px;border-radius:6px;border:2px solid var(--border);background:white;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;transition:all 0.15s}
+.check-box.ticked{background:var(--teal);border-color:var(--teal);color:white}
+/* Success */
+.success-screen{display:none;padding:40px 20px;text-align:center}
+.success-icon{width:72px;height:72px;background:var(--pass-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:32px}
+/* Overlay */
+.sending-overlay{display:none;position:fixed;inset:0;background:rgba(26,26,26,0.7);z-index:999;align-items:center;justify-content:center;flex-direction:column;color:white;gap:16px;font-size:16px;font-weight:600}
+.sending-overlay.show{display:flex}
+.spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,0.2);border-top-color:var(--teal);border-radius:50%;animation:spin 0.8s linear infinite}
+.error-msg{font-size:12px;color:var(--fail);margin-top:6px;display:none}
+.error-msg.show{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">M</div>
+  <div>
+    <div class="co-name">O'Connors Carpentry &amp; Maintenance</div>
+    <div class="form-sublabel">Leak Detection Report</div>
+  </div>
+</header>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="step-dots" id="stepDots"></div>
+
+<!-- STEP 1: Job Details -->
+<div class="step active" id="step1">
+  <div class="step-label">Step 1 of 6</div>
+  <div class="step-title">Job details</div>
+
+  <div class="field">
+    <label class="field-label">Client <span class="req">*</span></label>
+    <select id="clientName">
+      <option value="">Select client...</option>
+      <option>ARC Projects</option>
+      <option>HomeRepair</option>
+      <option>CRA Building Services</option>
+      <option>JP Flynn Builders</option>
+      <option>Other</option>
+    </select>
+  </div>
+  <div class="field conditional" id="clientOtherWrap">
+    <label class="field-label">Client name</label>
+    <input type="text" id="clientOther" placeholder="Type client name">
+  </div>
+  <div class="field">
+    <label class="field-label">Claim / reference number <span class="req">*</span></label>
+    <input type="text" id="claimNumber" placeholder="e.g. ALL37822-93490">
+  </div>
+  <div class="field">
+    <label class="field-label">Customer name <span class="req">*</span></label>
+    <input type="text" id="customerName" placeholder="Full name">
+  </div>
+  <div class="field">
+    <label class="field-label">Customer phone</label>
+    <input type="text" id="customerPhone" placeholder="e.g. 0448 488 180">
+  </div>
+  <div class="field">
+    <label class="field-label">Site address <span class="req">*</span></label>
+    <input type="text" id="siteAddress" placeholder="Street, suburb, state, postcode">
+  </div>
+  <div class="field">
+    <label class="field-label">Date of inspection <span class="req">*</span></label>
+    <input type="date" id="attendDate">
+  </div>
+  <div class="field">
+    <label class="field-label">Inspection carried out by</label>
+    <input type="text" id="carriedOutBy" placeholder="Technician name">
+  </div>
+
+  <div class="nav-buttons single">
+    <button class="btn btn-next" onclick="goNext(1)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 2: Property Details -->
+<div class="step" id="step2">
+  <div class="step-label">Step 2 of 6</div>
+  <div class="step-title">Property details</div>
+
+  <div class="field">
+    <label class="field-label">Construction type</label>
+    <div class="pill-group">
+      <button class="pill" data-group="construction" data-value="Brick Veneer">Brick Veneer</button>
+      <button class="pill" data-group="construction" data-value="Brick Cavity">Brick Cavity</button>
+      <button class="pill" data-group="construction" data-value="Weatherboard">Weatherboard</button>
+      <button class="pill" data-group="construction" data-value="Clad">Clad</button>
+      <button class="pill" data-group="construction" data-value="Other">Other</button>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Height</label>
+    <div class="pill-group">
+      <button class="pill" data-group="height" data-value="Single Storey">Single Storey</button>
+      <button class="pill" data-group="height" data-value="Double Storey">Double Storey</button>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Roof type</label>
+    <div class="pill-group">
+      <button class="pill" data-group="roofType" data-value="Tile">Tile</button>
+      <button class="pill" data-group="roofType" data-value="Metal Roofing">Metal</button>
+      <button class="pill" data-group="roofType" data-value="Colorbond">Colorbond</button>
+      <button class="pill" data-group="roofType" data-value="Flat">Flat</button>
+      <button class="pill" data-group="roofType" data-value="Other">Other</button>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Age of home</label>
+    <div class="pill-group">
+      <button class="pill" data-group="ageOfHome" data-value="Pre-1980s">Pre-1980s</button>
+      <button class="pill" data-group="ageOfHome" data-value="1980s-1990s">1980s-1990s</button>
+      <button class="pill" data-group="ageOfHome" data-value="1990s-2000s">1990s-2000s</button>
+      <button class="pill" data-group="ageOfHome" data-value="2000s-2010s">2000s-2010s</button>
+      <button class="pill" data-group="ageOfHome" data-value="2010s+">2010s+</button>
+      <button class="pill" data-group="ageOfHome" data-value="Unknown">Unknown</button>
+    </div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(2)">&larr; Back</button>
+    <button class="btn btn-next" onclick="goNext(2)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 3: Test Details -->
+<div class="step" id="step3">
+  <div class="step-label">Step 3 of 6</div>
+  <div class="step-title">Test details</div>
+
+  <div class="field">
+    <label class="field-label">Pressure test — domestic cold line</label>
+    <div class="pfn-group">
+      <button class="pfn-btn" data-group="coldLine" data-value="Passed">Pass</button>
+      <button class="pfn-btn" data-group="coldLine" data-value="Failed">Fail</button>
+      <button class="pfn-btn" data-group="coldLine" data-value="N/A">N/A</button>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Pressure test — domestic hot line</label>
+    <div class="pfn-group">
+      <button class="pfn-btn" data-group="hotLine" data-value="Passed">Pass</button>
+      <button class="pfn-btn" data-group="hotLine" data-value="Failed">Fail</button>
+      <button class="pfn-btn" data-group="hotLine" data-value="N/A">N/A</button>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Pressure at time of testing</label>
+    <div class="pill-group">
+      <button class="pill" data-group="pressure" data-value="300 KPA">300 KPA</button>
+      <button class="pill" data-group="pressure" data-value="350 KPA">350 KPA</button>
+      <button class="pill" data-group="pressure" data-value="400 KPA">400 KPA</button>
+      <button class="pill" data-group="pressure" data-value="450 KPA">450 KPA</button>
+      <button class="pill" data-group="pressure" data-value="500 KPA">500 KPA</button>
+      <button class="pill" data-group="pressure" data-value="550 KPA">550 KPA</button>
+      <button class="pill" data-group="pressure" data-value="600 KPA">600 KPA</button>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Custom pressure reading (if not listed above)</label>
+    <input type="text" id="pressureCustom" placeholder="e.g. 475 KPA">
+  </div>
+  <div class="field">
+    <label class="field-label">Thermal imaging</label>
+    <div class="pfn-group">
+      <button class="pfn-btn" data-group="thermalImaging" data-value="Passed">Pass</button>
+      <button class="pfn-btn" data-group="thermalImaging" data-value="Failed">Fail</button>
+      <button class="pfn-btn" data-group="thermalImaging" data-value="N/A">N/A</button>
+    </div>
+  </div>
+  <div class="field">
+    <label class="field-label">Additional test notes</label>
+    <textarea id="testNotes" rows="3" placeholder="Any additional test observations..."></textarea>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(3)">&larr; Back</button>
+    <button class="btn btn-next" onclick="goNext(3)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 4: Wet Areas -->
+<div class="step" id="step4">
+  <div class="step-label">Step 4 of 6</div>
+  <div class="step-title">Wet area tests</div>
+  <p style="font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.5;">Add one section per wet area inspected. Tap + to add more.</p>
+
+  <div id="wetAreaSections"></div>
+
+  <button type="button" id="addWetAreaBtn" style="width:100%;padding:14px;border-radius:var(--radius);border:2px dashed var(--teal);background:var(--teal-light);color:var(--teal-dark);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;margin-bottom:20px;">
+    + Add wet area
+  </button>
+
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(4)">&larr; Back</button>
+    <button class="btn btn-next" onclick="goNext(4)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 5: Flexi Hose + Summary -->
+<div class="step" id="step5">
+  <div class="step-label">Step 5 of 6</div>
+  <div class="step-title">Flexi hose &amp; summary</div>
+
+  <div class="section-head">Flexi Hose</div>
+  <div class="field">
+    <label class="field-label">Was the flexi hose or pipe the cause of damage?</label>
+    <div class="yn-group">
+      <button class="yn-btn" data-group="flexiCause" data-value="Yes">Yes</button>
+      <button class="yn-btn" data-group="flexiCause" data-value="No">No</button>
+    </div>
+  </div>
+  <div class="conditional" id="flexiDetailsWrap">
+    <div class="field">
+      <label class="field-label">Reason for failure</label>
+      <textarea id="flexiReason" rows="2" placeholder="Describe the failure..."></textarea>
+    </div>
+    <div class="field">
+      <label class="field-label">Location / fixture</label>
+      <input type="text" id="flexiLocation" placeholder="e.g. Under kitchen sink">
+    </div>
+    <div class="field">
+      <label class="field-label">Approximate date installed</label>
+      <input type="text" id="flexiDate" placeholder="e.g. 2015, unknown">
+    </div>
+    <div class="field">
+      <label class="field-label">Part of original construction or renovation?</label>
+      <div class="pill-group">
+        <button class="pill" data-group="flexiOrigin" data-value="Original construction">Original construction</button>
+        <button class="pill" data-group="flexiOrigin" data-value="Renovation">Renovation</button>
+        <button class="pill" data-group="flexiOrigin" data-value="Unknown">Unknown</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+  <div class="section-head">Result Summary</div>
+
+  <div class="field">
+    <label class="field-label">Observations <span class="req">*</span></label>
+    <textarea id="observations" rows="5" placeholder="What was found on site — what was inspected, what passed, what failed..."></textarea>
+  </div>
+  <div class="field">
+    <label class="field-label">Location of damages</label>
+    <textarea id="locationDamages" rows="3" placeholder="Where are the damaged areas? e.g. Timber subfloor below ensuite shower — approx 4m2"></textarea>
+  </div>
+  <div class="field">
+    <label class="field-label">Conclusion / cause of damage</label>
+    <textarea id="conclusion" rows="4" placeholder="What caused the damage based on the evidence found..."></textarea>
+  </div>
+  <div class="field">
+    <label class="field-label">Repairs required</label>
+    <textarea id="repairs" rows="3" placeholder="e.g. Repair shower base — replace waterproofing membrane"></textarea>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(5)">&larr; Back</button>
+    <button class="btn btn-next" onclick="goNext(5)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- STEP 6: Photos -->
+<div class="step" id="step6">
+  <div class="step-label">Step 6 of 6</div>
+  <div class="step-title">Photos</div>
+
+  <div class="field">
+    <label class="field-label">Front of house photo <span class="req">*</span></label>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">Overview of full property frontage.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="photo-upload-area" id="fohUploadArea" onclick="document.getElementById('fohCam').click()" style="padding:14px">
+        <input type="file" id="fohCam" accept="image/*" capture="environment" style="display:none" onchange="handleFOH(this.files)">
+        <div style="font-size:24px;margin-bottom:4px;">&#x1F3E0;</div>
+        <div style="font-size:13px;font-weight:600;color:var(--mid)">Take photo</div>
+      </div>
+      <div class="photo-upload-area" onclick="document.getElementById('fohLib').click()" style="padding:14px">
+        <input type="file" id="fohLib" accept="image/*" style="display:none" onchange="handleFOH(this.files)">
+        <div style="font-size:24px;margin-bottom:4px;">&#x1F5BC;&#xFE0F;</div>
+        <div style="font-size:13px;font-weight:600;color:var(--mid)">From library</div>
+      </div>
+    </div>
+    <div class="upload-status" id="fohStatus"></div>
+    <div class="photo-thumbs" id="fohThumbs"></div>
+  </div>
+
+  <div class="section-divider"></div>
+  <p style="font-size:13px;font-weight:600;color:var(--mid);margin-bottom:12px;">Site photos — upload per area</p>
+  <div id="photoSections"></div>
+  <button type="button" id="addPhotoGroupBtn" style="width:100%;padding:14px;border-radius:var(--radius);border:2px dashed var(--teal);background:var(--teal-light);color:var(--teal-dark);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;margin-bottom:20px;">
+    + Add photo group
+  </button>
+
+  <div class="field">
+    <label class="field-label">Photo checklist — tick each one <span class="req">*</span></label>
+    <div id="photoChecklist" style="background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">Front of house photo uploaded</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">All test areas photographed</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">Pressure gauge photos taken</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">Damage / failure areas photographed</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">All photos uploaded</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">Thermal imaging photos taken of vanity unit</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">Full room overview photos taken</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">Grout photos taken</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">Shower silicone photos taken</div>
+      </div>
+      <div class="check-item" style="border-bottom:none" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div style="font-size:14px;color:var(--dark)">Photos of toilet area taken</div>
+      </div>
+    </div>
+    <div id="checklistError" class="error-msg">Please tick all items before submitting.</div>
+  </div>
+
+  <div id="submitError" class="error-msg">Something went wrong. Please try again or screenshot and send to Liam.</div>
+  <div class="nav-buttons">
+    <button class="btn btn-back" onclick="goBack(6)">&larr; Back</button>
+    <button class="btn btn-submit" onclick="openPhotoModal()">Submit report &rarr;</button>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-screen" id="successScreen">
+  <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;background:var(--dark);text-align:center;">
+    <div style="width:80px;height:80px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:24px;">&#x2713;</div>
+    <div style="font-size:26px;font-weight:700;color:white;margin-bottom:10px;">Report submitted</div>
+    <div style="font-size:15px;color:#AAA;line-height:1.6;margin-bottom:36px;">Liam has received your<br>leak detection report.</div>
+    <div style="background:#1F1F1F;border:2px solid var(--fail);border-radius:16px;padding:24px 20px;width:100%;max-width:360px;text-align:left;">
+      <div style="font-size:16px;font-weight:700;color:var(--fail);margin-bottom:10px;">&#x1F4F8; Before you leave site</div>
+      <div style="font-size:15px;font-weight:700;color:white;margin-bottom:6px;">Upload all photos to Tradify now.</div>
+      <div style="font-size:14px;color:#AAA;">Do it before leaving — not later.</div>
+    </div>
+    <div style="margin-top:32px;font-size:13px;color:#555;">You can now close this tab.</div>
+  </div>
+</div>
+
+
+<!-- PHOTO CONFIRM MODAL -->
+<div id="photoConfirmModal" style="display:none;position:fixed;inset:0;background:rgba(26,26,26,0.75);z-index:998;align-items:flex-end;justify-content:center;">
+  <div style="background:var(--white);border-radius:20px 20px 0 0;padding:28px 20px 36px;width:100%;max-width:540px;animation:slideUp 0.25s ease">
+    <div style="font-size:20px;font-weight:700;color:var(--dark);margin-bottom:6px;">&#x1F4F8; Photo check</div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.5;">Before submitting — confirm you have taken and uploaded all required photos:</div>
+    <div id="modalChecklist" style="background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;">
+      <div class="modal-check-item" onclick="toggleModalCheck(this)" style="display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
+        <div class="modal-check-box" style="width:24px;height:24px;border-radius:6px;border:2px solid var(--border);background:white;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;transition:all 0.15s;"></div>
+        <div style="font-size:14px;color:var(--dark)">Front of house photo uploaded</div>
+      </div>
+      <div class="modal-check-item" onclick="toggleModalCheck(this)" style="display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
+        <div class="modal-check-box" style="width:24px;height:24px;border-radius:6px;border:2px solid var(--border);background:white;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;transition:all 0.15s;"></div>
+        <div style="font-size:14px;color:var(--dark)">Thermal imaging photos of vanity unit</div>
+      </div>
+      <div class="modal-check-item" onclick="toggleModalCheck(this)" style="display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
+        <div class="modal-check-box" style="width:24px;height:24px;border-radius:6px;border:2px solid var(--border);background:white;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;transition:all 0.15s;"></div>
+        <div style="font-size:14px;color:var(--dark)">Full room overview photos taken</div>
+      </div>
+      <div class="modal-check-item" onclick="toggleModalCheck(this)" style="display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
+        <div class="modal-check-box" style="width:24px;height:24px;border-radius:6px;border:2px solid var(--border);background:white;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;transition:all 0.15s;"></div>
+        <div style="font-size:14px;color:var(--dark)">Grout photos taken</div>
+      </div>
+      <div class="modal-check-item" onclick="toggleModalCheck(this)" style="display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
+        <div class="modal-check-box" style="width:24px;height:24px;border-radius:6px;border:2px solid var(--border);background:white;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;transition:all 0.15s;"></div>
+        <div style="font-size:14px;color:var(--dark)">Shower silicone photos taken</div>
+      </div>
+      <div class="modal-check-item" onclick="toggleModalCheck(this)" style="display:flex;align-items:center;gap:14px;padding:13px 16px;cursor:pointer;">
+        <div class="modal-check-box" style="width:24px;height:24px;border-radius:6px;border:2px solid var(--border);background:white;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;transition:all 0.15s;"></div>
+        <div style="font-size:14px;color:var(--dark)">Photos of toilet area taken</div>
+      </div>
+    </div>
+    <div id="modalError" style="font-size:12px;color:var(--fail);margin-bottom:12px;display:none;">Please tick all items to confirm.</div>
+    <button id="modalSubmitBtn" onclick="confirmAndSubmit()" style="width:100%;padding:16px;border-radius:var(--radius);background:var(--dark);color:white;font-family:var(--font);font-size:16px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;">Yes — all photos taken &amp; uploaded</button>
+    <button onclick="closePhotoModal()" style="width:100%;padding:16px;border-radius:var(--radius);background:var(--white);color:var(--mid);font-family:var(--font);font-size:15px;font-weight:600;border:1.5px solid var(--border);cursor:pointer;">No — go back and upload more</button>
+  </div>
+</div>
+
+<!-- OVERLAY -->
+<div class="sending-overlay" id="sendingOverlay">
+  <div class="spinner"></div>
+  <div>Sending report...</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+// ── CONFIG ───────────────────────────────────────────────────
+const EMAILJS_PUBLIC_KEY  = 'GKPaT752iXLmDaUF0';
+const EMAILJS_SERVICE_ID  = 'service_osn4h8y';
+const EMAILJS_TEMPLATE_ID = 'template_840qxa9';
+const CLOUDINARY_CLOUD    = 'dvho4onps';
+const CLOUDINARY_PRESET   = 'ocm_photos';
+const GAS_WEBHOOK         = 'https://script.google.com/macros/s/AKfycbxpHpR9EgfFi-C7ACCPNAjMu6ZGTZCrUHcjWibPk4p8dxmFGJqkgMmPR0qfWYkcnaKunA/exec';
+// ─────────────────────────────────────────────────────────────
+
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+const TOTAL_STEPS = 6;
+let currentStep = 1;
+const sel = {};
+let driveFolderId = '';
+let jobFolderIdParam = '';
+const fohPhotos = [];
+let wetAreaCounter = 0;
+const wetAreas = [];
+let photoGroupCounter = 0;
+const photoGroups = [];
+
+const AREA_TYPES = ['Ensuite','Bathroom','Main Bathroom','Laundry','Kitchen','Other'];
+
+// ── PROGRESS ────────────────────────────────────────────────
+function updateProgress() {
+  document.getElementById('progressFill').style.width = ((currentStep / TOTAL_STEPS) * 100) + '%';
+  var dots = document.getElementById('stepDots');
+  dots.innerHTML = '';
+  for (var i = 1; i <= TOTAL_STEPS; i++) {
+    var d = document.createElement('div');
+    d.className = 'dot' + (i === currentStep ? ' active' : i < currentStep ? ' done' : '');
+    dots.appendChild(d);
+  }
+}
+updateProgress();
+
+// ── URL PARAMS ───────────────────────────────────────────────
+(function() {
+  try {
+    var p = new URLSearchParams(window.location.search);
+    function sv(id, v) { if (v) { var e = document.getElementById(id); if (e) e.value = v; } }
+    sv('customerName', p.get('customer'));
+    sv('siteAddress',  p.get('address'));
+    sv('claimNumber',  p.get('claim'));
+    var dt = p.get('date'); if (dt) sv('attendDate', dt);
+    var cl = p.get('client');
+    if (cl) { var s = document.getElementById('clientName'); for (var i=0;i<s.options.length;i++) { if (s.options[i].value===cl){s.value=cl;break;} } }
+    driveFolderId   = p.get('folderid') || '';
+    jobFolderIdParam = p.get('jobfolderid') || '';
+    if (p.get('customer') || p.get('claim')) {
+      var b = document.createElement('div');
+      b.style.cssText = 'background:#E8F7F7;border-bottom:2px solid #2AABAB;padding:10px 20px;font-size:13px;font-weight:600;color:#1A8A8A;text-align:center;';
+      b.textContent = 'Job details pre-filled by Liam';
+      document.querySelector('header').insertAdjacentElement('afterend', b);
+    }
+  } catch(e) {}
+})();
+
+// ── PILL / PFN / YN SELECTION ────────────────────────────────
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('[data-group]');
+  if (!btn) return;
+  var group = btn.dataset.group;
+  var val   = btn.dataset.value;
+  sel[group] = val;
+
+  if (btn.classList.contains('pfn-btn')) {
+    btn.closest('.pfn-group').querySelectorAll('.pfn-btn').forEach(function(b) {
+      b.classList.remove('sel-pass','sel-fail','sel-na');
+    });
+    btn.classList.add(val==='Passed'?'sel-pass':val==='Failed'?'sel-fail':'sel-na');
+  } else if (btn.classList.contains('yn-btn')) {
+    btn.closest('.yn-group').querySelectorAll('.yn-btn').forEach(function(b) {
+      b.classList.remove('sel-yes','sel-no');
+    });
+    btn.classList.add(val==='Yes'?'sel-yes':'sel-no');
+    if (group === 'flexiCause') {
+      document.getElementById('flexiDetailsWrap').classList.toggle('show', val==='Yes');
+    }
+  } else if (btn.classList.contains('pill')) {
+    btn.closest('.pill-group').querySelectorAll('.pill').forEach(function(b) {
+      b.classList.remove('selected');
+    });
+    btn.classList.add('selected');
+  }
+});
+
+document.getElementById('clientName').addEventListener('change', function() {
+  document.getElementById('clientOtherWrap').classList.toggle('show', this.value === 'Other');
+});
+
+// ── NAVIGATION ───────────────────────────────────────────────
+function showStep(n) {
+  document.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById('step' + n).classList.add('active');
+  currentStep = n;
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function goNext(from) { if (validateStep(from)) showStep(from + 1); }
+function goBack(from) { showStep(from - 1); }
+
+function validateStep(step) {
+  if (step === 1) {
+    if (!document.getElementById('clientName').value ||
+        !document.getElementById('claimNumber').value.trim() ||
+        !document.getElementById('customerName').value.trim() ||
+        !document.getElementById('siteAddress').value.trim() ||
+        !document.getElementById('attendDate').value) {
+      alert('Please fill in all required fields marked with *');
+      return false;
+    }
+  }
+  if (step === 5) {
+    if (!document.getElementById('observations').value.trim()) {
+      alert('Please fill in Observations before proceeding.');
+      return false;
+    }
+  }
+  return true;
+}
+
+// ── WET AREA BUILDER ─────────────────────────────────────────
+function addWetArea() {
+  wetAreaCounter++;
+  var id = 'wa_' + wetAreaCounter;
+  var area = { id: id, type: '', tests: {}, comments: '' };
+  wetAreas.push(area);
+
+  var container = document.getElementById('wetAreaSections');
+  var div = document.createElement('div');
+  div.id = 'waDiv_' + id;
+  div.className = 'wet-area';
+
+  // Header
+  var hdr = document.createElement('div');
+  hdr.className = 'wet-area-header';
+  var title = document.createElement('div');
+  title.className = 'wet-area-title';
+  title.textContent = 'Area ' + wetAreaCounter;
+  var rmv = document.createElement('button');
+  rmv.type = 'button'; rmv.className = 'wet-area-remove'; rmv.textContent = '\u00D7';
+  rmv.addEventListener('click', function() {
+    var idx = wetAreas.findIndex(function(a) { return a.id === id; });
+    if (idx !== -1) wetAreas.splice(idx, 1);
+    div.remove();
+  });
+  hdr.appendChild(title); hdr.appendChild(rmv);
+  div.appendChild(hdr);
+
+  // Area type
+  var typeLbl = document.createElement('label');
+  typeLbl.className = 'field-label'; typeLbl.style.marginBottom = '6px'; typeLbl.style.display = 'block';
+  typeLbl.textContent = 'Area type';
+  var typeGroup = document.createElement('div');
+  typeGroup.className = 'pill-group'; typeGroup.style.marginBottom = '14px';
+  AREA_TYPES.forEach(function(t) {
+    var btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'pill';
+    btn.textContent = t; btn.dataset.areaId = id; btn.dataset.areaType = t;
+    btn.addEventListener('click', function() {
+      typeGroup.querySelectorAll('.pill').forEach(function(b) { b.classList.remove('selected'); });
+      this.classList.add('selected');
+      area.type = t;
+      title.textContent = t;
+    });
+    typeGroup.appendChild(btn);
+  });
+  div.appendChild(typeLbl);
+  div.appendChild(typeGroup);
+
+  // Tests
+  var tests = [
+    { key: 'shower_sprayWall',     label: 'Spray test — shower wall' },
+    { key: 'shower_sprayScreen',   label: 'Spray test — shower screen' },
+    { key: 'shower_pressureBreach',label: 'Pressure test — shower breach' },
+    { key: 'shower_waste',         label: 'Shower waste piping' },
+    { key: 'shower_floodTest',     label: 'Shower base flood test' },
+    { key: 'shower_groutSeals',    label: 'Condition of grout / seals' },
+    { key: 'bath_grout',           label: 'Bath hob grout / seals' },
+    { key: 'bath_waste',           label: 'Bath waste piping' },
+    { key: 'bath_spray',           label: 'Spray test — bath hob' },
+    { key: 'bath_pressure',        label: 'Pressure test — bath breach' },
+    { key: 'basin_waste',          label: 'Basin waste and water connections' },
+    { key: 'toilet_waste',         label: 'Toilet waste and water connections' },
+  ];
+
+  var testDivider = document.createElement('div');
+  testDivider.className = 'section-divider'; testDivider.style.margin = '10px 0 14px';
+  div.appendChild(testDivider);
+  var testHead = document.createElement('div');
+  testHead.className = 'section-head'; testHead.textContent = 'Test Results';
+  div.appendChild(testHead);
+
+  tests.forEach(function(t) {
+    var row = document.createElement('div');
+    row.className = 'test-row';
+    var lbl = document.createElement('div');
+    lbl.className = 'test-label'; lbl.textContent = t.label;
+    var grp = document.createElement('div');
+    grp.className = 'pfn-group';
+    ['Passed','Failed','N/A'].forEach(function(v) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'pfn-btn';
+      b.textContent = v === 'Passed' ? 'Pass' : v === 'Failed' ? 'Fail' : 'N/A';
+      b.addEventListener('click', function() {
+        grp.querySelectorAll('.pfn-btn').forEach(function(x) { x.classList.remove('sel-pass','sel-fail','sel-na'); });
+        this.classList.add(v==='Passed'?'sel-pass':v==='Failed'?'sel-fail':'sel-na');
+        area.tests[t.key] = v;
+      });
+      grp.appendChild(b);
+    });
+    row.appendChild(lbl); row.appendChild(grp);
+    div.appendChild(row);
+  });
+
+  // Comments
+  var commDiv = document.createElement('div');
+  commDiv.style.marginTop = '14px';
+  var commLbl = document.createElement('label');
+  commLbl.className = 'field-label'; commLbl.textContent = 'Further comments (optional)';
+  var commTa = document.createElement('textarea');
+  commTa.rows = 3; commTa.placeholder = 'Additional observations for this area...';
+  commTa.style.cssText = 'width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;font-family:var(--font);font-size:15px;color:var(--dark);outline:none;resize:none;line-height:1.5;box-sizing:border-box;';
+  commTa.addEventListener('input', function() { area.comments = this.value; });
+  commDiv.appendChild(commLbl); commDiv.appendChild(commTa);
+  div.appendChild(commDiv);
+
+  container.appendChild(div);
+}
+
+document.getElementById('addWetAreaBtn').addEventListener('click', addWetArea);
+// Add one by default
+addWetArea();
+
+// ── PHOTO GROUP BUILDER ──────────────────────────────────────
+function addPhotoGroup() {
+  photoGroupCounter++;
+  var id = 'pg_' + photoGroupCounter;
+  var group = { id: id, name: '', urls: [] };
+  photoGroups.push(group);
+
+  var container = document.getElementById('photoSections');
+  var div = document.createElement('div');
+  div.id = 'pgDiv_' + id;
+  div.style.cssText = 'background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;';
+
+  var hdr = document.createElement('div');
+  hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
+  var ttl = document.createElement('div');
+  ttl.style.cssText = 'font-size:13px;font-weight:700;color:var(--teal-dark);';
+  ttl.textContent = 'Photo group ' + photoGroupCounter;
+  var rmv = document.createElement('button');
+  rmv.type = 'button'; rmv.textContent = '\u00D7';
+  rmv.style.cssText = 'background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;';
+  rmv.addEventListener('click', function() {
+    var idx = photoGroups.findIndex(function(g) { return g.id === id; });
+    if (idx !== -1) photoGroups.splice(idx, 1);
+    div.remove();
+  });
+  hdr.appendChild(ttl); hdr.appendChild(rmv);
+  div.appendChild(hdr);
+
+  // Name input
+  var nameLbl = document.createElement('label');
+  nameLbl.style.cssText = 'display:block;font-size:13px;font-weight:600;color:var(--mid);margin-bottom:6px;';
+  nameLbl.textContent = 'Area / description';
+  var nameInput = document.createElement('input');
+  nameInput.type = 'text'; nameInput.placeholder = 'e.g. Ensuite shower, Subfloor, Thermal imaging...';
+  nameInput.style.cssText = 'width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;font-family:var(--font);font-size:15px;color:var(--dark);outline:none;box-sizing:border-box;margin-bottom:12px;';
+  nameInput.addEventListener('input', function() { group.name = this.value; });
+  div.appendChild(nameLbl); div.appendChild(nameInput);
+
+  // Photo buttons
+  var photoLbl = document.createElement('label');
+  photoLbl.style.cssText = 'display:block;font-size:13px;font-weight:600;color:var(--mid);margin-bottom:6px;';
+  photoLbl.textContent = 'Photos';
+  div.appendChild(photoLbl);
+
+  var grid = document.createElement('div');
+  grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:10px;';
+
+  var camArea = document.createElement('div');
+  camArea.className = 'photo-upload-area'; camArea.style.padding = '14px';
+  camArea.innerHTML = '<div style="font-size:24px;margin-bottom:4px;">&#x1F4F7;</div><div style="font-size:13px;font-weight:600;color:var(--mid)">Take photo</div>';
+  var camInput = document.createElement('input');
+  camInput.type = 'file'; camInput.accept = 'image/*'; camInput.setAttribute('capture','environment');
+  camInput.multiple = true; camInput.style.display = 'none';
+  camArea.appendChild(camInput);
+  camArea.addEventListener('click', function() { camInput.click(); });
+
+  var libArea = document.createElement('div');
+  libArea.className = 'photo-upload-area'; libArea.style.padding = '14px';
+  libArea.innerHTML = '<div style="font-size:24px;margin-bottom:4px;">&#x1F5BC;&#xFE0F;</div><div style="font-size:13px;font-weight:600;color:var(--mid)">From library</div>';
+  var libInput = document.createElement('input');
+  libInput.type = 'file'; libInput.accept = 'image/*';
+  libInput.multiple = true; libInput.style.display = 'none';
+  libArea.appendChild(libInput);
+  libArea.addEventListener('click', function() { libInput.click(); });
+
+  grid.appendChild(camArea); grid.appendChild(libArea);
+  div.appendChild(grid);
+
+  var statusEl = document.createElement('div');
+  statusEl.className = 'upload-status';
+  div.appendChild(statusEl);
+
+  var thumbsEl = document.createElement('div');
+  thumbsEl.className = 'photo-thumbs';
+  div.appendChild(thumbsEl);
+
+  camInput.addEventListener('change', function() { uploadGroupPhotos(group, camArea, statusEl, thumbsEl, this.files); });
+  libInput.addEventListener('change', function() { uploadGroupPhotos(group, libArea, statusEl, thumbsEl, this.files); });
+
+  container.appendChild(div);
+}
+
+document.getElementById('addPhotoGroupBtn').addEventListener('click', addPhotoGroup);
+addPhotoGroup(); // default
+
+// ── CLOUDINARY ───────────────────────────────────────────────
+async function uploadToCloudinary(file, tag) {
+  var fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLOUDINARY_PRESET);
+  fd.append('tags', tag);
+  fd.append('folder', 'ocm_photos');
+  var r = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload', { method: 'POST', body: fd });
+  var d = await r.json();
+  if (!d.secure_url) throw new Error('Upload failed');
+  return d.secure_url;
+}
+
+async function handleFOH(files) {
+  if (!files || !files.length) return;
+  var statusEl = document.getElementById('fohStatus');
+  var thumbsEl = document.getElementById('fohThumbs');
+  var areaEl   = document.getElementById('fohUploadArea');
+  statusEl.classList.add('show'); statusEl.textContent = 'Uploading...';
+  var claim = document.getElementById('claimNumber').value.trim() || 'job';
+  var cust  = document.getElementById('customerName').value.trim().replace(/\s+/g,'-') || 'customer';
+  var img = document.createElement('img');
+  img.src = URL.createObjectURL(files[0]); img.className = 'photo-thumb'; img.style.opacity='0.4';
+  thumbsEl.appendChild(img);
+  try {
+    var url = await uploadToCloudinary(files[0], claim+'-'+cust+'-foh');
+    fohPhotos.push(url); img.style.opacity='1';
+    areaEl.classList.add('has-photos'); statusEl.textContent='1 photo uploaded';
+  } catch(e) { statusEl.textContent='Upload failed. Try again.'; img.style.opacity='0.2'; }
+}
+
+async function uploadGroupPhotos(group, areaEl, statusEl, thumbsEl, files) {
+  if (!files || !files.length) return;
+  statusEl.classList.add('show');
+  var claim = document.getElementById('claimNumber').value.trim() || 'job';
+  var cust  = document.getElementById('customerName').value.trim().replace(/\s+/g,'-') || 'customer';
+  var tag   = claim+'-'+cust+'-'+(group.name||group.id).replace(/\s+/g,'-');
+  for (var i=0; i<files.length; i++) {
+    statusEl.textContent = 'Uploading '+(i+1)+' of '+files.length+'...';
+    var img = document.createElement('img');
+    img.src = URL.createObjectURL(files[i]); img.className='photo-thumb'; img.style.opacity='0.4';
+    thumbsEl.appendChild(img);
+    try {
+      var url = await uploadToCloudinary(files[i], tag);
+      group.urls.push(url); img.style.opacity='1';
+    } catch(e) { img.style.opacity='0.2'; statusEl.textContent='Upload failed. Try again.'; return; }
+  }
+  areaEl.classList.add('has-photos');
+  statusEl.textContent = group.urls.length+' photo'+(group.urls.length>1?'s':'')+' uploaded';
+}
+
+// ── CHECKLIST ────────────────────────────────────────────────
+function toggleCheck(item) {
+  var box = item.querySelector('.check-box');
+  var t = box.classList.toggle('ticked');
+  box.textContent = t ? '\u2713' : '';
+}
+
+// ── COLLECT DATA ─────────────────────────────────────────────
+function collectData() {
+  var client = document.getElementById('clientName').value;
+  if (client === 'Other') client = document.getElementById('clientOther').value.trim();
+  var dv = document.getElementById('attendDate').value;
+  var df = dv ? (function(){ var p=dv.split('-'); return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:dv; })() : '';
+
+  var lines = [
+    '=== LEAK DETECTION REPORT ===','',
+    '--- JOB DETAILS ---',
+    'Client: '+client,
+    'Reference: '+document.getElementById('claimNumber').value.trim(),
+    'Customer: '+document.getElementById('customerName').value.trim(),
+    'Phone: '+(document.getElementById('customerPhone').value.trim()||'Not provided'),
+    'Site Address: '+document.getElementById('siteAddress').value.trim(),
+    'Date of Inspection: '+df,
+    'Carried out by: '+(document.getElementById('carriedOutBy').value.trim()||'Not specified'),
+    '',
+    '--- PROPERTY DETAILS ---',
+    'Construction: '+(sel['construction']||'Not selected'),
+    'Height: '+(sel['height']||'Not selected'),
+    'Roof Type: '+(sel['roofType']||'Not selected'),
+    'Age of Home: '+(sel['ageOfHome']||'Not selected'),
+    '',
+    '--- TEST DETAILS ---',
+    'Pressure test cold line: '+(sel['coldLine']||'Not tested'),
+    'Pressure test hot line: '+(sel['hotLine']||'Not tested'),
+    'Pressure at time of testing: '+(sel['pressure']||document.getElementById('pressureCustom').value.trim()||'Not recorded'),
+    'Thermal imaging: '+(sel['thermalImaging']||'Not tested'),
+    'Test notes: '+(document.getElementById('testNotes').value.trim()||'None'),
+    '',
+    '--- WET AREA TEST RESULTS ---',
+  ];
+
+  wetAreas.forEach(function(area, i) {
+    lines.push('');
+    lines.push('WET AREA '+(i+1)+': '+(area.type||'Unnamed'));
+    var testLabels = {
+      shower_sprayWall:'Spray test - shower wall', shower_sprayScreen:'Spray test - shower screen',
+      shower_pressureBreach:'Pressure test - shower breach', shower_waste:'Shower waste piping',
+      shower_floodTest:'Shower base flood test', shower_groutSeals:'Grout/seals condition',
+      bath_grout:'Bath hob grout/seals', bath_waste:'Bath waste piping',
+      bath_spray:'Spray test - bath hob', bath_pressure:'Pressure test - bath breach',
+      basin_waste:'Basin waste and water connections', toilet_waste:'Toilet waste and water connections',
+    };
+    Object.keys(testLabels).forEach(function(k) {
+      if (area.tests[k]) lines.push(testLabels[k]+': '+area.tests[k]);
+    });
+    if (area.comments) lines.push('Further comments: '+area.comments);
+  });
+
+  lines.push('');
+  lines.push('--- FLEXI HOSE ---');
+  lines.push('Flexi hose cause of damage: '+(sel['flexiCause']||'Not answered'));
+  if (sel['flexiCause']==='Yes') {
+    lines.push('Reason for failure: '+(document.getElementById('flexiReason').value.trim()||'Not specified'));
+    lines.push('Location/fixture: '+(document.getElementById('flexiLocation').value.trim()||'Not specified'));
+    lines.push('Date installed: '+(document.getElementById('flexiDate').value.trim()||'Not specified'));
+    lines.push('Origin: '+(sel['flexiOrigin']||'Not specified'));
+  }
+
+  lines.push('');
+  lines.push('--- RESULT SUMMARY ---');
+  lines.push('OBSERVATIONS:');
+  lines.push(document.getElementById('observations').value.trim());
+  lines.push('');
+  lines.push('LOCATION OF DAMAGES:');
+  lines.push(document.getElementById('locationDamages').value.trim()||'Not specified');
+  lines.push('');
+  lines.push('CONCLUSION / CAUSE OF DAMAGE:');
+  lines.push(document.getElementById('conclusion').value.trim()||'Not specified');
+  lines.push('');
+  lines.push('REPAIRS REQUIRED:');
+  lines.push(document.getElementById('repairs').value.trim()||'Not specified');
+
+  lines.push('');
+  lines.push('--- PHOTOS ---');
+  lines.push('Front of House ('+fohPhotos.length+'): '+(fohPhotos.length?fohPhotos.join(' | '):'None'));
+  photoGroups.forEach(function(g) {
+    lines.push((g.name||'Photo group')+' ('+g.urls.length+'): '+(g.urls.length?g.urls.join(' | '):'None'));
+  });
+
+  return lines.join('\n');
+}
+
+
+// ── PHOTO CONFIRM MODAL ──────────────────────────────────────
+function openPhotoModal() {
+  document.getElementById('submitError').classList.remove('show');
+  document.getElementById('checklistError').classList.remove('show');
+
+  // Must pass main checklist first
+  var allTicked = true;
+  document.querySelectorAll('#photoChecklist .check-item').forEach(function(item) {
+    if (!item.querySelector('.check-box').classList.contains('ticked')) allTicked = false;
+  });
+  if (!allTicked) {
+    document.getElementById('checklistError').classList.add('show');
+    document.getElementById('photoChecklist').scrollIntoView({ behavior:'smooth', block:'center' });
+    return;
+  }
+
+  // Reset modal checkboxes
+  document.querySelectorAll('#modalChecklist .modal-check-box').forEach(function(box) {
+    box.classList.remove('ticked');
+    box.style.background = 'white';
+    box.style.borderColor = 'var(--border)';
+    box.style.color = '';
+    box.textContent = '';
+  });
+  document.getElementById('modalError').style.display = 'none';
+  var modal = document.getElementById('photoConfirmModal');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closePhotoModal() {
+  document.getElementById('photoConfirmModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function toggleModalCheck(item) {
+  var box = item.querySelector('.modal-check-box');
+  var ticked = box.textContent === '✓';
+  if (ticked) {
+    box.textContent = '';
+    box.style.background = 'white';
+    box.style.borderColor = 'var(--border)';
+    box.style.color = '';
+  } else {
+    box.textContent = '✓';
+    box.style.background = 'var(--teal)';
+    box.style.borderColor = 'var(--teal)';
+    box.style.color = 'white';
+  }
+}
+
+function confirmAndSubmit() {
+  var allTicked = true;
+  document.querySelectorAll('#modalChecklist .modal-check-box').forEach(function(box) {
+    if (box.textContent !== '✓') allTicked = false;
+  });
+  if (!allTicked) {
+    document.getElementById('modalError').style.display = 'block';
+    return;
+  }
+  closePhotoModal();
+  submitForm();
+}
+
+// ── SUBMIT ───────────────────────────────────────────────────
+async function submitForm() {
+  document.getElementById('submitError').classList.remove('show');
+  document.getElementById('checklistError').classList.remove('show');
+
+  var allTicked = true;
+  document.querySelectorAll('#photoChecklist .check-item').forEach(function(item) {
+    if (!item.querySelector('.check-box').classList.contains('ticked')) allTicked = false;
+  });
+  if (!allTicked) {
+    document.getElementById('checklistError').classList.add('show');
+    document.getElementById('photoChecklist').scrollIntoView({ behavior:'smooth', block:'center' });
+    return;
+  }
+
+  document.getElementById('sendingOverlay').classList.add('show');
+
+  var customer = document.getElementById('customerName').value.trim();
+  var claim    = document.getElementById('claimNumber').value.trim();
+  var client   = document.getElementById('clientName').value;
+  var address  = document.getElementById('siteAddress').value.trim();
+
+  // Fire webhook FIRST
+  var allGroupPhotos = {};
+  photoGroups.forEach(function(g) {
+    if (g.urls.length > 0) allGroupPhotos[g.name || g.id] = g.urls;
+  });
+  var hasPhotos = fohPhotos.length > 0 || Object.keys(allGroupPhotos).length > 0;
+  if (hasPhotos) {
+    var payload = 'data=' + encodeURIComponent(JSON.stringify({
+      action:           'movePhotos',
+      folderId:         driveFolderId,
+      jobfolderid:      jobFolderIdParam,
+      customer:         customer,
+      claim:            claim,
+      client:           client,
+      reportType:       'Leak Detection',
+      fohPhotos:        fohPhotos,
+      attendancePhotos: allGroupPhotos,
+    }));
+    fetch(GAS_WEBHOOK, {
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body: payload,
+      mode:'no-cors',
+    }).catch(function(e) { console.log('Webhook error:', e); });
+  }
+
+  // Send EmailJS
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email:  'liam@oconnorscarpentry.com',
+      subject:   'Leak Detection Report - ' + address + ' (' + claim + ')',
+      message:   collectData(),
+      from_name: 'Field App',
+    });
+  } catch(emailErr) {
+    console.error('EmailJS error:', emailErr);
+  }
+
+  document.getElementById('sendingOverlay').classList.remove('show');
+  document.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active'); });
+  document.querySelector('header').style.display = 'none';
+  document.querySelector('.progress-bar').style.display = 'none';
+  document.getElementById('stepDots').style.display = 'none';
+  document.getElementById('successScreen').style.display = 'block';
+  document.body.style.background = 'var(--dark)';
+  document.body.style.padding = '0';
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+</script>
+</body>
+</html>
