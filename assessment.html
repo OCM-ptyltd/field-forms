@@ -639,6 +639,8 @@ function updateProgress() {
 }
 updateProgress();
 
+var presetReportType = '';
+
 // ── URL PARAMS ──────────────────────────────────────────────
 (function() {
   try {
@@ -659,14 +661,9 @@ updateProgress();
     driveFolderId = p.get('folderid') || '';
     jobFolderIdParam = p.get('jobfolderid') || '';
 
-    // Pre-select report type if passed in URL
-    var typeParam = p.get('type');
-    if (typeParam) {
-      var typePill = document.querySelector('.pill[data-group="reportType"][data-value="' + typeParam + '"]');
-      if (typePill) {
-        typePill.click();
-      }
-    }
+    // Report type preset from the work-order link. Applied after the pill
+    // handlers are attached (REPORT TYPE PRESET below): clicking here did nothing.
+    presetReportType = p.get('type') || '';
     var photosParam = p.get('photos');
     var banner = document.getElementById('warnBanner');
     if (photosParam) {
@@ -737,6 +734,24 @@ document.querySelectorAll('.pill, .pill-yn').forEach(function(btn) {
     }
   });
 });
+
+// ── REPORT TYPE PRESET ──────────────────────────────────────
+// The work-order link sets the commissioned report type. Select it now that
+// the pill handlers exist, and confirm before it is changed, so a Roof
+// Inspection job is not silently submitted as a Trade Assessment.
+(function() {
+  if (!presetReportType) return;
+  var presetPill = document.querySelector('.pill[data-group="reportType"][data-value="' + presetReportType + '"]');
+  if (!presetPill) return;
+  presetPill.click();
+  presetPill.parentNode.addEventListener('click', function(e) {
+    var pill = e.target.closest('.pill[data-group="reportType"]');
+    if (!pill || pill.dataset.value === sel['reportType']) return;
+    var ok = window.confirm('This job was sent to you as a ' + presetReportType + '. Change this report to ' +
+      pill.dataset.value + '? Only do this if the office has asked for a ' + pill.dataset.value + '.');
+    if (!ok) { e.stopImmediatePropagation(); e.preventDefault(); }
+  }, true);
+})();
 
 document.getElementById('clientName').addEventListener('change', function() {
   document.getElementById('clientOtherWrap').classList.toggle('show', this.value === 'Other');
@@ -1240,7 +1255,7 @@ function toggleCheck(item) {
 function collectData() {
   var clientRaw  = document.getElementById('clientName').value;
   var client     = clientRaw === 'Other' ? document.getElementById('clientOther').value.trim() : clientRaw;
-  var reportType = sel['reportType'] || 'Trade Assessment';
+  var reportType = sel['reportType'] || '';
   var dateVal    = document.getElementById('attendDate').value;
   var dateFmt    = dateVal ? (function() {
     var p = dateVal.split('-');
@@ -1378,7 +1393,7 @@ async function submitForm() {
   var customer   = document.getElementById('customerName').value.trim();
   var claim      = document.getElementById('claimNumber').value.trim();
   var client     = document.getElementById('clientName').value;
-  var reportType = sel['reportType'] || 'Trade Assessment';
+  var reportType = sel['reportType'] || '';
 
   try {
     // Fire webhook FIRST — before EmailJS so photos always move regardless of email result
